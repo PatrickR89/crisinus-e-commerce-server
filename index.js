@@ -20,9 +20,60 @@ const db = mysql.createConnection({
   database: process.env.MYSQL_DATABASE
 });
 
-app.post("/create", (req, res) => {
-  const title = req.body.title;
+const idList = [];
+
+const clearList = () => {
+  idList.splice(0, idList.length);
+  return idList;
+};
+const saveIds = (result) => {
+  idList.push(result);
+  return idList;
+};
+
+app.post("/addauthors", (req, res) => {
   const authors = req.body.authors;
+
+  authors.forEach((author) => {
+    db.query(
+      `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`,
+
+      (err, result) => {
+        if (err) {
+          console.log(err);
+        }
+
+        if (result.length < 1) {
+          author["id"] = uuidv4();
+          db.query(
+            "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
+            [author.id, author.name, author.last_name],
+            (err, result) => {
+              if (err) {
+                console.log(err);
+              } else {
+                console.log(`inserted author ${author.name}`);
+                saveIds(author.id);
+                console.log(idList);
+                return idList;
+              }
+            }
+          );
+        } else {
+          saveIds(result[0].id);
+          console.log(author.name);
+          console.log(idList);
+          return idList;
+        }
+      }
+    );
+  });
+
+  res.send("authors added");
+});
+
+app.post("/addbook", (req, res) => {
+  const title = req.body.title;
   const images = req.body.images;
   const genre = req.body.genre;
   const max_order = req.body.maxOrder;
@@ -32,33 +83,14 @@ app.post("/create", (req, res) => {
   const year = req.body.year;
   const desc = req.body.desc;
 
-  console.log(req.body);
-
-  authors.forEach((author) => {
-    author["id"] = uuidv4();
-    return author;
-  });
-
-  const authorsIds = JSON.stringify(
-    authors.map((author) => {
-      return author.id;
+  let ids = JSON.stringify(
+    idList.flat(1).map((singleId) => {
+      return singleId;
     })
   );
+  console.log(idList);
+  console.log(ids);
 
-  console.log(authorsIds);
-  authors.forEach((author) => {
-    db.query(
-      "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
-      [author.id, author.name, author.last_name],
-      (err, result) => {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("inserted author");
-        }
-      }
-    );
-  });
   db.query(
     "INSERT INTO books (id, title, images, genre, max_order, price, publisher, language, year, description, authors) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
     [
@@ -72,17 +104,28 @@ app.post("/create", (req, res) => {
       language,
       year,
       desc,
-      authorsIds
+      ids
     ],
 
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        res.send("books inserted");
+        res.send("book inserted");
       }
     }
   );
+  clearList();
+});
+
+app.get("/authorList", (req, res) => {
+  db.query("SELECT * FROM authors", (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
 });
 
 app.listen(3001, () => {
