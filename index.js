@@ -7,6 +7,17 @@ const { v4: uuidv4 } = require("uuid");
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: (req, file, callBack) => {
+    callBack(null, "uploads");
+  },
+  filename: (req, file, callBack) => {
+    callBack(null, `${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 const app = express();
 
@@ -31,7 +42,7 @@ const saveIds = (result) => {
   return idList;
 };
 
-app.post("/addauthors", (req, res) => {
+app.post("/books/addauthors", (req, res) => {
   const authors = req.body.authors;
 
   authors.forEach((author) => {
@@ -72,9 +83,14 @@ app.post("/addauthors", (req, res) => {
   res.send("authors added");
 });
 
-app.post("/addbook", (req, res) => {
+app.post("/books/addimages", upload.array("images", 5), (req, res) => {
+  const file = req.files;
+  console.log(file);
+  res.send(file);
+});
+
+app.post("/books/addbook", (req, res) => {
   const title = req.body.title;
-  const images = req.body.images;
   const genre = req.body.genre;
   const max_order = req.body.maxOrder;
   const price = req.body.price;
@@ -96,7 +112,7 @@ app.post("/addbook", (req, res) => {
     [
       uuidv4(),
       title,
-      images,
+      "['']",
       genre,
       max_order,
       price,
@@ -118,7 +134,7 @@ app.post("/addbook", (req, res) => {
   clearList();
 });
 
-app.get("/authorList", (req, res) => {
+app.get("/books/authorList", (req, res) => {
   db.query("SELECT * FROM authors", (err, result) => {
     if (err) {
       console.log(err);
