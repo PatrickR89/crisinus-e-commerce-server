@@ -17,12 +17,20 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+// image url -> req.file.path
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  }
+});
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 const db = mysql.createConnection({
   user: process.env.MYSQL_USER,
@@ -32,14 +40,23 @@ const db = mysql.createConnection({
 });
 
 const idList = [];
+const imageList = [];
 
 const clearList = () => {
   idList.splice(0, idList.length);
   return idList;
 };
+const clearImageList = () => {
+  imageList.splice(0, imageList.length);
+  return imageList;
+};
 const saveIds = (result) => {
   idList.push(result);
   return idList;
+};
+const saveImages = (result) => {
+  imageList.push(result);
+  return imageList;
 };
 
 app.post("/books/addauthors", (req, res) => {
@@ -84,9 +101,11 @@ app.post("/books/addauthors", (req, res) => {
 });
 
 app.post("/books/addimages", upload.array("images", 5), (req, res) => {
-  const file = req.files;
-  console.log(file);
-  res.send(file);
+  const fileList = req.files;
+  fileList.forEach((file) => {
+    saveImages(file.path);
+  });
+  res.send(fileList);
 });
 
 app.post("/books/addbook", (req, res) => {
@@ -104,15 +123,18 @@ app.post("/books/addbook", (req, res) => {
       return singleId;
     })
   );
-  console.log(idList);
-  console.log(ids);
+  let images = JSON.stringify(
+    imageList.flat(1).map((singlePath) => {
+      return singlePath;
+    })
+  );
 
   db.query(
     "INSERT INTO books (id, title, images, genre, max_order, price, publisher, language, year, description, authors) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
     [
       uuidv4(),
       title,
-      "['']",
+      images,
       genre,
       max_order,
       price,
@@ -132,10 +154,20 @@ app.post("/books/addbook", (req, res) => {
     }
   );
   clearList();
+  clearImageList();
 });
 
 app.get("/books/authorList", (req, res) => {
   db.query("SELECT * FROM authors", (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+app.get("/books/booklist", (req, res) => {
+  db.query("SELECT * FROM books", (err, result) => {
     if (err) {
       console.log(err);
     } else {
