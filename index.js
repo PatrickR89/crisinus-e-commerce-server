@@ -6,6 +6,8 @@ const { v4: uuidv4 } = require("uuid");
 
 const express = require("express");
 const mysql = require("mysql2");
+const mysqlPromise = require("mysql2/promise");
+const bluebird = require("bluebird");
 const cors = require("cors");
 const multer = require("multer");
 const storage = multer.diskStorage({
@@ -38,6 +40,20 @@ const db = mysql.createConnection({
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE
 });
+
+let dbP;
+
+const main = async () => {
+  dbP = await mysqlPromise.createConnection({
+    user: process.env.MYSQL_USER,
+    host: process.env.MYSQL_HOST,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    Promise: bluebird
+  });
+};
+
+main();
 
 const idList = [];
 const imageList = [];
@@ -157,7 +173,7 @@ app.post("/books/addbook", (req, res) => {
   clearImageList();
 });
 
-app.get("/books/authorList", (req, res) => {
+app.get("/books/authorList", async (req, res) => {
   db.query("SELECT * FROM authors", (err, result) => {
     if (err) {
       console.log(err);
@@ -166,6 +182,7 @@ app.get("/books/authorList", (req, res) => {
     }
   });
 });
+
 app.get("/books/booklist", (req, res) => {
   db.query("SELECT * FROM books", (err, result) => {
     if (err) {
@@ -174,6 +191,25 @@ app.get("/books/booklist", (req, res) => {
       res.send(result);
     }
   });
+});
+
+app.post("/books/singlebook", async (req, res) => {
+  const id = req.body.id;
+
+  const [book] = await dbP.execute(`SELECT * FROM books WHERE id = '${id}'`);
+  const authorsIds = book[0].authors;
+
+  const authors = await Promise.all(
+    authorsIds.map((authorId) => {
+      return new Promise(async (resolve, reject) => {
+        const [author] = await dbP.execute(
+          `SELECT * FROM authors WHERE id = '${authorId}'`
+        );
+        return resolve(author[0]);
+      });
+    })
+  );
+  res.send([book[0], authors]);
 });
 
 app.listen(3001, () => {
