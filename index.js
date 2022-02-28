@@ -55,76 +55,12 @@ const main = async () => {
 
 main();
 
-const idList = [];
-const imageList = [];
-
-const clearList = () => {
-  idList.splice(0, idList.length);
-  return idList;
-};
-const clearImageList = () => {
-  imageList.splice(0, imageList.length);
-  return imageList;
-};
-const saveIds = (result) => {
-  idList.push(result);
-  return idList;
-};
-const saveImages = (result) => {
-  imageList.push(result);
-  return imageList;
-};
-
-app.post("/books/addauthors", (req, res) => {
-  const authors = req.body.authors;
-
-  authors.forEach((author) => {
-    db.query(
-      `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`,
-
-      (err, result) => {
-        if (err) {
-          console.log(err);
-        }
-
-        if (result.length < 1) {
-          author["id"] = uuidv4();
-          db.query(
-            "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
-            [author.id, author.name, author.last_name],
-            (err, result) => {
-              if (err) {
-                console.log(err);
-              } else {
-                console.log(`inserted author ${author.name}`);
-                saveIds(author.id);
-                console.log(idList);
-                return idList;
-              }
-            }
-          );
-        } else {
-          saveIds(result[0].id);
-          console.log(author.name);
-          console.log(idList);
-          return idList;
-        }
-      }
-    );
-  });
-
-  res.send("authors added");
-});
-
 app.post("/books/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;
-  fileList.forEach((file) => {
-    saveImages(file.path);
-  });
   res.send(fileList);
 });
 
-app.post("/books/addbook", (req, res) => {
+app.post("/books/addbook", async (req, res) => {
   const title = req.body.title;
   const genre = req.body.genre;
   const max_order = req.body.maxOrder;
@@ -133,24 +69,36 @@ app.post("/books/addbook", (req, res) => {
   const language = req.body.language;
   const year = req.body.year;
   const desc = req.body.desc;
+  const imgs = req.body.images;
+  const authors = req.body.authors;
 
-  let ids = JSON.stringify(
-    idList.flat(1).map((singleId) => {
-      return singleId;
+  let tempImgs = JSON.stringify(imgs);
+
+  const authorsIds = await Promise.all(
+    authors.map((author) => {
+      return new Promise(async (resolve, reject) => {
+        let [result] = await dbP.execute(
+          `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
+        );
+        if (result.length < 1) {
+          author["id"] = uuidv4();
+          let [result] = await dbP.execute(
+            "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
+            [author.id, author.name, author.last_name]
+          );
+          return result;
+        }
+        return resolve(result[0].id);
+      });
     })
   );
-  let images = JSON.stringify(
-    imageList.flat(1).map((singlePath) => {
-      return singlePath;
-    })
-  );
 
-  db.query(
+  const [newBook] = await dbP.execute(
     "INSERT INTO books (id, title, images, genre, max_order, price, publisher, language, year, description, authors) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
     [
       uuidv4(),
       title,
-      images,
+      tempImgs,
       genre,
       max_order,
       price,
@@ -158,19 +106,11 @@ app.post("/books/addbook", (req, res) => {
       language,
       year,
       desc,
-      ids
-    ],
-
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        res.send("book inserted");
-      }
-    }
+      authorsIds
+    ]
   );
-  clearList();
-  clearImageList();
+  res.send(newBook);
+  // clearList();
 });
 
 app.get("/books/authorList", async (req, res) => {
@@ -210,6 +150,56 @@ app.post("/books/singlebook", async (req, res) => {
     })
   );
   res.send([book[0], authors]);
+});
+
+app.post("/books/editbook", async (req, res) => {
+  const title = req.body.title;
+  const genre = req.body.genre;
+  const max_order = req.body.maxOrder;
+  const price = req.body.price;
+  const publisher = req.body.publisher;
+  const language = req.body.language;
+  const year = req.body.year;
+  const description = req.body.desc;
+  const id = req.body.bookId;
+  const authors = req.body.authors;
+
+  const authorsIds = await Promise.all(
+    authors.map((author) => {
+      return new Promise(async (resolve, reject) => {
+        let [result] = await dbP.execute(
+          `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
+        );
+        if (result.length < 1) {
+          author["id"] = uuidv4();
+          let [result] = await dbP.execute(
+            "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
+            [author.id, author.name, author.last_name]
+          );
+          return result;
+        }
+        return resolve(result[0].id);
+      });
+    })
+  );
+  console.log(authorsIds);
+
+  const [bookRes] = await dbP.execute(
+    "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ? WHERE id = ?",
+    [
+      title,
+      authorsIds,
+      genre,
+      max_order,
+      price,
+      publisher,
+      language,
+      year,
+      description,
+      id
+    ]
+  );
+  res.send(bookRes);
 });
 
 app.listen(3001, () => {
