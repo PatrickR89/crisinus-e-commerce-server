@@ -9,6 +9,7 @@ const mysql = require("mysql2");
 const mysqlPromise = require("mysql2/promise");
 const bluebird = require("bluebird");
 const cors = require("cors");
+const fse = require("fs-extra");
 const multer = require("multer");
 const storage = multer.diskStorage({
   destination: (req, file, callBack) => {
@@ -57,7 +58,18 @@ main();
 
 app.post("/books/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;
+  console.log(fileList);
   res.send(fileList);
+});
+
+app.post("/books/deleteimages", (req, res) => {
+  const imgUrl = req.body.url;
+  const tmpImgUrl = JSON.stringify(imgUrl);
+  console.log(tmpImgUrl);
+  // fse.remove(tmpImgUrl, (err) => {
+  //   if (err) return console.log(err);
+  //   console.log("success");
+  // });
 });
 
 app.post("/books/addbook", async (req, res) => {
@@ -163,6 +175,9 @@ app.post("/books/editbook", async (req, res) => {
   const description = req.body.desc;
   const id = req.body.bookId;
   const authors = req.body.authors;
+  const imgs = req.body.images;
+
+  const tempImgs = JSON.stringify(imgs);
 
   const authorsIds = await Promise.all(
     authors.map((author) => {
@@ -182,10 +197,9 @@ app.post("/books/editbook", async (req, res) => {
       });
     })
   );
-  console.log(authorsIds);
 
   const [bookRes] = await dbP.execute(
-    "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ? WHERE id = ?",
+    "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ?, images = ? WHERE id = ?",
     [
       title,
       authorsIds,
@@ -196,6 +210,7 @@ app.post("/books/editbook", async (req, res) => {
       language,
       year,
       description,
+      tempImgs,
       id
     ]
   );
