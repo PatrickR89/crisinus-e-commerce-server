@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     callBack(null, "uploads");
   },
   filename: (req, file, callBack) => {
-    callBack(null, `${file.originalname}`);
+    callBack(null, `${uuidv4()}-${file.originalname}`);
   }
 });
 
@@ -64,12 +64,11 @@ app.post("/books/addimages", upload.array("images", 5), (req, res) => {
 
 app.post("/books/deleteimages", (req, res) => {
   const imgUrl = req.body.url;
-  const tmpImgUrl = JSON.stringify(imgUrl);
-  console.log(tmpImgUrl);
-  // fse.remove(tmpImgUrl, (err) => {
-  //   if (err) return console.log(err);
-  //   console.log("success");
-  // });
+  const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
+  fse.remove(imgUrl, (err) => {
+    if (err) return console.log(err);
+    console.log(newUrl);
+  });
 });
 
 app.post("/books/addbook", async (req, res) => {
@@ -214,7 +213,22 @@ app.post("/books/editbook", async (req, res) => {
       id
     ]
   );
+  console.log(bookRes);
   res.send(bookRes);
+});
+
+app.get("/authors/authorlist", async (req, res) => {
+  const [authors] = await dbP.execute("SELECT * FROM authors");
+  res.send(authors);
+});
+
+app.post("/authors/getauthor", async (req, res) => {
+  const id = req.body.id;
+
+  const [author] = await dbP.execute("SELECT * FROM authors WHERE id = ?", [
+    id
+  ]);
+  res.send(author);
 });
 
 app.listen(3001, () => {
