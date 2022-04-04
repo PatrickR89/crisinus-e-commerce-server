@@ -23,7 +23,6 @@ router.post("/getauthor", async (req, res) => {
   const [author] = await dbP.execute("SELECT * FROM authors WHERE id = ?", [
     id
   ]);
-  console.log(author);
   res.send(author);
 });
 
@@ -47,11 +46,26 @@ router.put("/editauthor", async (req, res) => {
 
 router.delete("/deleteauthor", async (req, res) => {
   const id = req.body.id;
-  console.log(id);
+  const tempId = JSON.stringify(id);
   const [author] = await dbP.execute("SELECT * FROM authors WHERE id = ?", [
     id
   ]);
-  console.log(author);
+  const [books] = await dbP.execute(
+    `SELECT * FROM books WHERE JSON_CONTAINS(authors, '${tempId}')`
+  );
+  books.forEach(async (book) => {
+    const newAuthors = book.authors.filter((author) => author !== id);
+    const [newAuthorsList] = await dbP.execute(
+      "UPDATE books SET authors = ? WHERE id = ?",
+      [newAuthors, book.id]
+    );
+  });
+
+  const [delAuthor] = await dbP.execute("DELETE FROM authors WHERE id = ?", [
+    id
+  ]);
+
+  res.send(delAuthor);
 });
 
 module.exports = router;
