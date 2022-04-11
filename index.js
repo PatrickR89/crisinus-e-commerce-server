@@ -13,6 +13,7 @@ const { dbAuth } = require("./mySqlConnection");
 
 const bookRoutes = require("./routes/bookRoutes");
 const authorRoutes = require("./routes/authorRoutes");
+const giftshopRoutes = require("./routes/giftshopRoutes");
 
 const storage = multer.diskStorage({
   destination: (req, file, callBack) => {
@@ -48,6 +49,7 @@ connection();
 
 app.use("/books", bookRoutes);
 app.use("/authors", authorRoutes);
+app.use("/giftshop", giftshopRoutes);
 
 app.post("/images/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;
