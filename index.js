@@ -15,6 +15,7 @@ const bookRoutes = require("./routes/bookRoutes");
 const authorRoutes = require("./routes/authorRoutes");
 const giftshopRoutes = require("./routes/giftshopRoutes");
 const reviewsRoutes = require("./routes/reviewsRoutes");
+const newsRoutes = require("./routes/newsRoutes");
 
 const storage = multer.diskStorage({
   destination: (req, file, callBack) => {
@@ -52,6 +53,7 @@ app.use("/books", bookRoutes);
 app.use("/authors", authorRoutes);
 app.use("/giftshop", giftshopRoutes);
 app.use("/reviews", reviewsRoutes);
+app.use("/news", newsRoutes);
 
 app.post("/images/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;
