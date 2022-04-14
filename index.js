@@ -27,8 +27,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// image url -> req.file.path
-
 const upload = multer({
   storage: storage,
   limits: {
@@ -60,15 +58,30 @@ app.use("/infopages", infoRoutes);
 app.post("/images/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;
   res.send(fileList);
+  fileList.forEach(async (file) => {
+    const [saveImage] = await dbP.execute(
+      "INSERT INTO images (id, name, source) VALUES (?, ?, ?)",
+      [file.filename, file.originalname, file.path]
+    );
+  });
 });
 
-app.post("/images/deleteimages", (req, res) => {
+app.post("/images/deleteimages", async (req, res) => {
   const imgUrl = req.body.url;
   const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
   fse.remove(imgUrl, (err) => {
     if (err) return console.log(err);
     console.log(newUrl);
   });
+  const [delImg] = await dbP.execute("DELETE FROM images WHERE source = ?", [
+    imgUrl
+  ]);
+});
+
+app.get("/images/getimages", async (req, res) => {
+  const [imageList] = await dbP.execute("SELECT * FROM images");
+  console.log(imageList);
+  res.send(imageList);
 });
 
 app.listen(3001, () => {
