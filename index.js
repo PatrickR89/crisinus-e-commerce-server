@@ -5,11 +5,19 @@ if (process.env.NODE_ENV !== "production") {
 const { v4: uuidv4 } = require("uuid");
 
 const express = require("express");
+const session = require("express-session");
 const cors = require("cors");
 const fse = require("fs-extra");
 const multer = require("multer");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 const { dbAuth } = require("./mySqlConnection");
+
+const { verifyJWT } = require("./JWT/jwtMiddleware");
 
 const bookRoutes = require("./routes/bookRoutes");
 const authorRoutes = require("./routes/authorRoutes");
@@ -36,9 +44,40 @@ const upload = multer({
 
 const app = express();
 
-app.use(cors());
+const whitelist = process.env.WHITELISTED_DOMAINS
+  ? process.env.WHITELISTED_DOMAINS.split(",")
+  : [];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use(
+  session({
+    key: process.env.COOKIE_KEY,
+    secret: process.env.COOKIE_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      expires: 1000 * 60 * 60 * 24 * 3
+    }
+  })
+);
 
 let dbP;
 
@@ -54,6 +93,79 @@ app.use("/giftshop", giftshopRoutes);
 app.use("/reviews", reviewsRoutes);
 app.use("/news", newsRoutes);
 app.use("/infopages", infoRoutes);
+
+app.post("/register", (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  bcrypt.hash(password, 10, async (err, hash) => {
+    const [newUser] = await dbP.execute(
+      "INSERT INTO users (id, username, password) VALUES (?, ?, ?)",
+      [uuidv4(), username, hash],
+      (err, result) => {
+        if (err) return console.log(err);
+      }
+    );
+    console.log(newUser);
+  });
+});
+
+app.get("/authentication", verifyJWT, (req, res) => {
+  console.log(req.body);
+  const token = req.headers["x-access-token"];
+  console.log(token);
+  res.send("Authenticated!");
+});
+
+app.get("/login", (req, res) => {
+  if (req.session.user) {
+    res.json({ loggedIn: true, user: req.session.user });
+  } else {
+    res.json({ loggedIn: false });
+  }
+});
+
+app.get("/logout", (req, res) => {
+  res.clearCookie("access-token");
+  res.end();
+});
+
+app.post("/login", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  const [user] = await dbP.execute(
+    "SELECT * FROM users WHERE username =?",
+    [username],
+    (err, result) => {
+      if (err) return console.log(err);
+    }
+  );
+  if (user.length > 0) {
+    bcrypt.compare(password, user[0].password, (err, response) => {
+      if (response) {
+        req.session.user = user;
+        const id = user[0].id;
+        const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+          expiresIn: 300
+        });
+
+        res.cookie("access-token", token, {
+          maxAge: 1000 * 60 * 60 * 24,
+          httpOnly: true
+        });
+        res.json({ auth: true, token: token, result: user });
+      } else {
+        res.json({
+          auth: false,
+          message: "No username/password match"
+        });
+      }
+    });
+  } else {
+    res.json({ auth: false, message: "No username/password match" });
+  }
+});
 
 app.post("/images/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;

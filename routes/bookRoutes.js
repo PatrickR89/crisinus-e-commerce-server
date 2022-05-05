@@ -3,6 +3,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 
 const { dbAuth } = require("../mySqlConnection");
+const { verifyJWT } = require("../JWT/jwtMiddleware");
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const connection = async () => {
 
 connection();
 
-router.post("/addbook", async (req, res) => {
+router.post("/addbook", verifyJWT, async (req, res) => {
   const title = req.body.title;
   const genre = req.body.genre;
   const max_order = req.body.maxOrder;
@@ -77,7 +78,7 @@ router.get("/booklist", async (req, res) => {
   res.send(result);
 });
 
-router.post("/singlebook", async (req, res) => {
+router.post("/singlebook", verifyJWT, async (req, res) => {
   const id = req.body.id;
 
   const [book] = await dbP.execute(`SELECT * FROM books WHERE id = '${id}'`);
@@ -97,7 +98,7 @@ router.post("/singlebook", async (req, res) => {
   res.send([book[0], authors]);
 });
 
-router.put("/editbook", async (req, res) => {
+router.put("/editbook", verifyJWT, async (req, res) => {
   const title = req.body.title;
   const genre = req.body.genre;
   const max_order = req.body.maxOrder;
@@ -151,7 +152,7 @@ router.put("/editbook", async (req, res) => {
   res.send(bookRes);
 });
 
-router.delete("/deletebook", async (req, res) => {
+router.delete("/deletebook", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [delBook] = await dbP.execute("DELETE FROM books WHERE id = ?", [id]);
   res.send(delBook);
