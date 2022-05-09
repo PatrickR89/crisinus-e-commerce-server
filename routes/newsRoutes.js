@@ -3,6 +3,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 
 const { dbAuth } = require("../mySqlConnection");
+const { verifyJWT } = require("../JWT/jwtMiddleware");
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const connection = async () => {
 
 connection();
 
-router.post("/addnews", async (req, res) => {
+router.post("/addnews", verifyJWT, async (req, res) => {
   const title = req.body.title;
   const images = req.body.images;
   const text = req.body.text;
@@ -35,13 +36,13 @@ router.get("/getnews", async (req, res) => {
   res.send(news);
 });
 
-router.post("/newsbyid", async (req, res) => {
+router.post("/newsbyid", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [newsById] = await dbP.execute("SELECT * FROM news WHERE id = ?", [id]);
   res.send(newsById);
 });
 
-router.put("/editnews", async (req, res) => {
+router.put("/editnews", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const title = req.body.title;
   const images = req.body.images;
@@ -58,7 +59,7 @@ router.put("/editnews", async (req, res) => {
   res.send(editedNews);
 });
 
-router.delete("/deletenews", async (req, res) => {
+router.delete("/deletenews", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [delItem] = await dbP.execute("DELETE FROM news WHERE id = ?", [id]);
 

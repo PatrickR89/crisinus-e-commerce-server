@@ -3,6 +3,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 
 const { dbAuth } = require("../mySqlConnection");
+const { verifyJWT } = require("../JWT/jwtMiddleware");
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get("/getinfo", async (req, res) => {
   res.send(info);
 });
 
-router.post("/resetinfo", async (req, res) => {
+router.post("/resetinfo", verifyJWT, async (req, res) => {
   const [delItem] = await dbP.execute("TRUNCATE TABLE info_pages");
   console.log(delItem);
   const [insertItems] = await dbP.execute(
@@ -27,7 +28,7 @@ router.post("/resetinfo", async (req, res) => {
   );
 });
 
-router.post("/getinfobyid", async (req, res) => {
+router.post("/getinfobyid", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [pageById] = await dbP.execute(
     "SELECT * FROM info_pages WHERE id = ?",
@@ -37,7 +38,7 @@ router.post("/getinfobyid", async (req, res) => {
   res.send(pageById);
 });
 
-router.put("/editinfo", async (req, res) => {
+router.put("/editinfo", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const images = req.body.images;
   const content = req.body.content;

@@ -3,6 +3,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 
 const { dbAuth } = require("../mySqlConnection");
+const { verifyJWT } = require("../JWT/jwtMiddleware");
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get("/bookList", async (req, res) => {
   res.send(bookList);
 });
 
-router.post("/addreview", async (req, res) => {
+router.post("/addreview", verifyJWT, async (req, res) => {
   const bookId = req.body.book;
   const rating_title = req.body.rating_title;
   const rating = req.body.rating;
@@ -52,7 +53,7 @@ router.get("/reviewsList", async (req, res) => {
   res.send(reviewsList);
 });
 
-router.post("/getInitialReview", async (req, res) => {
+router.post("/getInitialReview", verifyJWT, async (req, res) => {
   const id = req.body.id;
 
   const [initialReview] = await dbP.execute(
@@ -62,7 +63,7 @@ router.post("/getInitialReview", async (req, res) => {
   res.send(initialReview[0]);
 });
 
-router.put("/editreview", async (req, res) => {
+router.put("/editreview", verifyJWT, async (req, res) => {
   const rating_id = req.body.id;
   const bookId = req.body.book;
   const rating_title = req.body.rating_title;
@@ -89,7 +90,7 @@ router.put("/editreview", async (req, res) => {
   );
 });
 
-router.delete("/deletereview", async (req, res) => {
+router.delete("/deletereview", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [delItem] = await dbP.execute("DELETE FROM ratings WHERE id = ?", [id]);
 

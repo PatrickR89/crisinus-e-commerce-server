@@ -3,6 +3,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 
 const { dbAuth } = require("../mySqlConnection");
+const { verifyJWT } = require("../JWT/jwtMiddleware");
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get("/giftlist", async (req, res) => {
   res.send(result);
 });
 
-router.post("/addgift", async (req, res) => {
+router.post("/addgift", verifyJWT, async (req, res) => {
   const name = req.body.name;
   const price = req.body.price;
   const max_order = req.body.max_order;
@@ -33,13 +34,13 @@ router.post("/addgift", async (req, res) => {
   res.send(addedItem);
 });
 
-router.post("/getitem", async (req, res) => {
+router.post("/getitem", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [item] = await dbP.execute("SELECT * FROM giftshop WHERE id = ?", [id]);
   res.send(item);
 });
 
-router.put("/editgift", async (req, res) => {
+router.put("/editgift", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const name = req.body.name;
   const price = req.body.price;
@@ -57,7 +58,7 @@ router.put("/editgift", async (req, res) => {
   res.send(editedItem);
 });
 
-router.delete("/deleteitem", async (req, res) => {
+router.delete("/deleteitem", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const [delItem] = await dbP.execute("DELETE FROM giftshop WHERE id = ?", [
     id

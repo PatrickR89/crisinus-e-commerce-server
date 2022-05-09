@@ -1,6 +1,7 @@
 const express = require("express");
 
 const { dbAuth } = require("../mySqlConnection");
+const { verifyJWT } = require("../JWT/jwtMiddleware");
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.get("/authorlist", async (req, res) => {
   res.send(authors);
 });
 
-router.post("/getauthor", async (req, res) => {
+router.post("/getauthor", verifyJWT, async (req, res) => {
   const id = req.body.id;
 
   const [author] = await dbP.execute("SELECT * FROM authors WHERE id = ?", [
@@ -26,7 +27,7 @@ router.post("/getauthor", async (req, res) => {
   res.send(author);
 });
 
-router.put("/editauthor", async (req, res) => {
+router.put("/editauthor", verifyJWT, async (req, res) => {
   first_name = req.body.name;
   last_name = req.body.last_name;
   images = req.body.images;
@@ -44,7 +45,7 @@ router.put("/editauthor", async (req, res) => {
   res.send(editedAuthor);
 });
 
-router.delete("/deleteauthor", async (req, res) => {
+router.delete("/deleteauthor", verifyJWT, async (req, res) => {
   const id = req.body.id;
   const tempId = JSON.stringify(id);
   const [author] = await dbP.execute("SELECT * FROM authors WHERE id = ?", [
