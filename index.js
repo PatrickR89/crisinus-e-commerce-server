@@ -168,6 +168,25 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/newsletter", async (req, res) => {
+  const email = req.body.email;
+
+  const [checkEmail] = await dbP.execute(
+    "SELECT * FROM newsletter WHERE email = ?",
+    [email]
+  );
+
+  if (checkEmail[0]) {
+    res.send("You have already subscribed to our newsletter!");
+  } else {
+    const [saveEmail] = await dbP.execute(
+      "INSERT INTO newsletter (email) VALUES (?)",
+      [email]
+    );
+    res.send("Thank you for your subscription!");
+  }
+});
+
 app.post("/images/addimages", upload.array("images", 5), (req, res) => {
   const fileList = req.files;
   res.send(fileList);
