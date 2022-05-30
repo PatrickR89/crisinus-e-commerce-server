@@ -15,4 +15,9 @@ router.post("/submitcart", (req, res) => {
   res.send("Order submitted");
 });
 
+router.post("/submitmessage", (req, res) => {
+  console.log(req.body);
+  res.send("Message sent");
+});
+
 module.exports = router;
