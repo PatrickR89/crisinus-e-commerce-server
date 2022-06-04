@@ -20,4 +20,30 @@ router.post("/submitmessage", (req, res) => {
   res.send("Message sent");
 });
 
+router.get("/books", async (req, res) => {
+  const [books] = await dbP.execute("SELECT * FROM books");
+
+  await Promise.all(
+    books.map(async (book) => {
+      const authorNames = Promise.all(
+        book.authors.map(async (author) => {
+          const authorDB = await dbP
+            .execute("SELECT name, last_name FROM authors WHERE id = ?", [
+              author
+            ])
+            .then((value) => {
+              return value[0][0];
+            })
+            .catch((err) => console.log(err));
+          return authorDB;
+        })
+      );
+      const authors = await authorNames;
+      return (book.authors = authors);
+    })
+  );
+
+  res.json(books);
+});
+
 module.exports = router;

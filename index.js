@@ -185,7 +185,7 @@ app.post("/newsletter", async (req, res) => {
       "INSERT INTO newsletter (email) VALUES (?)",
       [email]
     );
-    res.send("Thank you for your subscription!");
+    res.send(`Thank you for your subscription on ${saveEmail[0]}`);
   }
 });
 
