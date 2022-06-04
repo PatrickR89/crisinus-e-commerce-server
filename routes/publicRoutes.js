@@ -21,7 +21,9 @@ router.post("/submitmessage", (req, res) => {
 });
 
 router.get("/books", async (req, res) => {
-  const [books] = await dbP.execute("SELECT * FROM books");
+  const [books] = await dbP.execute(
+    "SELECT id, title, authors, price, language FROM books"
+  );
 
   await Promise.all(
     books.map(async (book) => {
@@ -44,6 +46,28 @@ router.get("/books", async (req, res) => {
   );
 
   res.json(books);
+});
+
+router.post("/bookss", async (req, res) => {
+  const id = req.body.id;
+  const [book] = await dbP.execute("SELECT * FROM books WHERE id = ?", [id]);
+
+  const newBook = book[0];
+
+  const authorNames = Promise.all(
+    book[0].authors.map(async (author) => {
+      const authorDB = await dbP
+        .execute("SELECT name, last_name FROM authors WHERE id = ?", [author])
+        .then((value) => {
+          return value[0][0];
+        })
+        .catch((err) => console.log(err));
+      return authorDB;
+    })
+  );
+  newBook.authors = await authorNames;
+
+  res.send(newBook);
 });
 
 module.exports = router;
