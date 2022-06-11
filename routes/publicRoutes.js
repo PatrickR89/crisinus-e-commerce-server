@@ -20,64 +20,78 @@ router.post("/submitmessage", (req, res) => {
     res.send("Message sent");
 });
 
-router.get("/books", async (req, res) => {
-    const [books] = await dbP.execute(
-        "SELECT id, title, authors, price, language, images FROM books"
-    );
+router
+    .route("/books")
+    .get(async (req, res) => {
+        const [books] = await dbP.execute(
+            "SELECT id, title, authors, price, language, images FROM books"
+        );
 
-    await Promise.all(
-        books.map(async (book) => {
-            const authorNames = Promise.all(
-                book.authors.map(async (author) => {
-                    const authorDB = await dbP
-                        .execute(
-                            "SELECT name, last_name FROM authors WHERE id = ?",
-                            [author]
-                        )
-                        .then((value) => {
-                            return value[0][0];
-                        })
-                        .catch((err) => console.log(err));
-                    return authorDB;
-                })
-            );
-            const authors = await authorNames;
-            return (book.authors = authors);
-        })
-    );
+        await Promise.all(
+            books.map(async (book) => {
+                const authorNames = Promise.all(
+                    book.authors.map(async (author) => {
+                        const authorDB = await dbP
+                            .execute(
+                                "SELECT name, last_name FROM authors WHERE id = ?",
+                                [author]
+                            )
+                            .then((value) => {
+                                return value[0][0];
+                            })
+                            .catch((err) => console.log(err));
+                        return authorDB;
+                    })
+                );
+                const authors = await authorNames;
+                return (book.authors = authors);
+            })
+        );
 
-    res.json(books);
-});
+        res.json(books);
+    })
+    .post(async (req, res) => {
+        const id = req.body.id;
+        const [book] = await dbP.execute("SELECT * FROM books WHERE id = ?", [
+            id
+        ]);
 
-router.post("/singlebook", async (req, res) => {
-    const id = req.body.id;
-    const [book] = await dbP.execute("SELECT * FROM books WHERE id = ?", [id]);
+        const newBook = book[0];
 
-    const newBook = book[0];
+        const authorNames = Promise.all(
+            book[0].authors.map(async (author) => {
+                const authorDB = await dbP
+                    .execute(
+                        "SELECT name, last_name FROM authors WHERE id = ?",
+                        [author]
+                    )
+                    .then((value) => {
+                        return value[0][0];
+                    })
+                    .catch((err) => console.log(err));
+                return authorDB;
+            })
+        );
+        newBook.authors = await authorNames;
 
-    const authorNames = Promise.all(
-        book[0].authors.map(async (author) => {
-            const authorDB = await dbP
-                .execute("SELECT name, last_name FROM authors WHERE id = ?", [
-                    author
-                ])
-                .then((value) => {
-                    return value[0][0];
-                })
-                .catch((err) => console.log(err));
-            return authorDB;
-        })
-    );
-    newBook.authors = await authorNames;
+        res.send(newBook);
+    });
 
-    res.send(newBook);
-});
-
-router.get("/gifts", async (req, res) => {
-    const [gifts] = await dbP.execute(
-        "SELECT id, name, price, images FROM giftshop"
-    );
-    res.send(gifts);
-});
+router
+    .route("/gifts")
+    .get(async (req, res) => {
+        const [gifts] = await dbP.execute(
+            "SELECT id, name, price, images FROM giftshop"
+        );
+        res.send(gifts);
+    })
+    .post(async (req, res) => {
+        const id = req.body.id;
+        const [gift] = await dbP.execute(
+            "SELECT * FROM giftshop WHERE id = ?",
+            [id]
+        );
+        res.send(gift);
+    });
 
 module.exports = router;
