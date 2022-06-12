@@ -94,4 +94,19 @@ router
         res.send(gift);
     });
 
+router
+    .route("/news")
+    .get(async (req, res) => {
+        const [news] = await dbP.execute("SELECT * FROM news");
+        res.send(news);
+        console.log(news);
+    })
+    .post(async (req, res) => {
+        const id = req.body.id;
+        const [news] = await dbP.execute("SELECT * FROM news WHERE id = ?", [
+            id
+        ]);
+        res.send(news);
+    });
+
 module.exports = router;
