@@ -99,7 +99,6 @@ router
     .get(async (req, res) => {
         const [news] = await dbP.execute("SELECT * FROM news");
         res.send(news);
-        console.log(news);
     })
     .post(async (req, res) => {
         const id = req.body.id;
@@ -108,5 +107,10 @@ router
         ]);
         res.send(news);
     });
+
+router.get("/informations", async (req, res) => {
+    const [informations] = await dbP.execute("SELECT * FROM info_pages");
+    res.send(informations);
+});
 
 module.exports = router;
