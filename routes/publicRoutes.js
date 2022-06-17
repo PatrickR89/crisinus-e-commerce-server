@@ -113,4 +113,9 @@ router.get("/informations", async (req, res) => {
     res.send(informations);
 });
 
+router.get("/reviews", async (req, res) => {
+    const [reviews] = await dbP.execute("SELECT * FROM ratings");
+    res.send(reviews);
+});
+
 module.exports = router;
