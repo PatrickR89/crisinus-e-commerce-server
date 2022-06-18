@@ -118,4 +118,25 @@ router.get("/reviews", async (req, res) => {
     res.send(reviews);
 });
 
+router
+    .route("/authors")
+    .get(async (req, res) => {
+        const [authors] = await dbP.execute(
+            "SELECT id, name, last_name FROM authors"
+        );
+        const [books] = await dbP.execute(
+            "SELECT id, title, images, price, authors FROM books"
+        );
+
+        res.send([authors, books]);
+    })
+    .post(async (req, res) => {
+        const authorID = req.body.author;
+        const [author] = await dbP.execute(
+            "SELECT * FROM authors WHERE id = ?",
+            [authorID]
+        );
+        res.send(author);
+    });
+
 module.exports = router;
