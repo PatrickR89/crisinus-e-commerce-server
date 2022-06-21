@@ -45,21 +45,35 @@ const upload = multer({
 
 const app = express();
 
-const whitelist = ["http://localhost:3000"];
+// const domainsFromEnv = process.env.WHITELISTED_DOMAINS;
+// const allowlist = domainsFromEnv.split(",").map((item) => item.trim());
 
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
+// const corsOptions = {
+//     origin: function (origin, callback) {
+//         if (!origin || whitelist.indexOf(origin) !== -1) {
+//             callback(null, true);
+//         } else {
+//             console.log(origin);
+//             callback(new Error("Not allowed by CORS"));
+//         }
+//     },
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true
+// };
+
+const allowlist = ["http://localhost:3000", "http://localhost:3001"];
+
+var corsOptionsDelegate = function (req, callback) {
+    var corsOptions;
+    if (allowlist.includes(req.header("Origin"))) {
+        corsOptions = { origin: true };
+    } else {
+        corsOptions = { origin: false };
+    }
+    callback(null, corsOptions);
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptionsDelegate));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
