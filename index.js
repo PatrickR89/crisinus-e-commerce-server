@@ -148,7 +148,7 @@ app.post("/login", async (req, res) => {
                 req.session.user = user;
                 const id = user[0].id;
                 const token = jwt.sign({ id }, process.env.JWT_SECRET, {
-                    expiresIn: 600
+                    expiresIn: 1800
                 });
 
                 res.cookie("access-token", token, {
