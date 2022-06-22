@@ -26,6 +26,7 @@ const reviewsRoutes = require("./routes/reviewsRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const infoRoutes = require("./routes/infoRoutes");
 const publicRoutes = require("./routes/publicRoutes");
+const linksRoutes = require("./routes/linksRoutes");
 
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
@@ -90,6 +91,7 @@ app.use("/giftshop", giftshopRoutes);
 app.use("/reviews", reviewsRoutes);
 app.use("/news", newsRoutes);
 app.use("/infopages", infoRoutes);
+app.use("/links", linksRoutes);
 app.use("/public", publicRoutes);
 
 app.post("/register", (req, res) => {

@@ -23,9 +23,7 @@ router.post("/submitmessage", (req, res) => {
 router
     .route("/books")
     .get(async (req, res) => {
-        const [books] = await dbP.execute(
-            "SELECT id, title, authors, price, language, images FROM books"
-        );
+        const [books] = await dbP.execute("SELECT * FROM books");
 
         await Promise.all(
             books.map(async (book) => {
@@ -138,5 +136,10 @@ router
         );
         res.send(author);
     });
+
+router.route("/links").get(async (req, res) => {
+    const [links] = await dbP.execute("SELECT * FROM anchor_links");
+    res.send(links);
+});
 
 module.exports = router;
