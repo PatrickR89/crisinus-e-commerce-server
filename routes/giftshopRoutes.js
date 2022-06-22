@@ -10,61 +10,66 @@ const router = express.Router();
 let dbP;
 
 const connection = async () => {
-  dbP = await dbAuth;
+    dbP = await dbAuth;
 };
 
 connection();
 
-router.get("/giftlist", async (req, res) => {
-  const [result] = await dbP.execute("SELECT * FROM giftshop");
-  res.send(result);
-});
+router
+    .route("/")
+    .get(async (req, res) => {
+        const [result] = await dbP.execute("SELECT * FROM giftshop");
+        res.send(result);
+    })
+    .post(verifyJWT, async (req, res) => {
+        const name = req.body.name;
+        const price = req.body.price;
+        const max_order = req.body.max_order;
+        const images = req.body.images;
+        const description = req.body.description;
 
-router.post("/addgift", verifyJWT, async (req, res) => {
-  const name = req.body.name;
-  const price = req.body.price;
-  const max_order = req.body.max_order;
-  const images = req.body.images;
-  const description = req.body.description;
+        const [addedItem] = await dbP.execute(
+            "INSERT INTO giftshop (id, name, price, max_order, images, description) VALUES (?, ?, ?, ?, ?, ?)",
+            [uuidv4(), name, price, max_order, images, description]
+        );
+        res.send(addedItem);
+    });
 
-  const [addedItem] = await dbP.execute(
-    "INSERT INTO giftshop (id, name, price, max_order, images, description) VALUES (?, ?, ?, ?, ?, ?)",
-    [uuidv4(), name, price, max_order, images, description]
-  );
-  res.send(addedItem);
-});
+router
+    .route("/:id")
+    .post(verifyJWT, async (req, res) => {
+        const id = req.body.id;
+        const [item] = await dbP.execute(
+            "SELECT * FROM giftshop WHERE id = ?",
+            [id]
+        );
+        res.send(item);
+    })
+    .put(verifyJWT, async (req, res) => {
+        const id = req.body.id;
+        const name = req.body.name;
+        const price = req.body.price;
+        const max_order = req.body.max_order;
+        const images = req.body.images;
+        const description = req.body.description;
 
-router.post("/getitem", verifyJWT, async (req, res) => {
-  const id = req.body.id;
-  const [item] = await dbP.execute("SELECT * FROM giftshop WHERE id = ?", [id]);
-  res.send(item);
-});
+        const tempImgs = JSON.stringify(images);
 
-router.put("/editgift", verifyJWT, async (req, res) => {
-  const id = req.body.id;
-  const name = req.body.name;
-  const price = req.body.price;
-  const max_order = req.body.max_order;
-  const images = req.body.images;
-  const description = req.body.description;
+        const [editedItem] = await dbP.execute(
+            "UPDATE giftshop SET name = ?, price =?, max_order =?, images =?, description =? WHERE id =?",
+            [name, price, max_order, tempImgs, description, id]
+        );
 
-  const tempImgs = JSON.stringify(images);
+        res.send(editedItem);
+    })
+    .delete(verifyJWT, async (req, res) => {
+        const id = req.body.id;
+        const [delItem] = await dbP.execute(
+            "DELETE FROM giftshop WHERE id = ?",
+            [id]
+        );
 
-  const [editedItem] = await dbP.execute(
-    "UPDATE giftshop SET name = ?, price =?, max_order =?, images =?, description =? WHERE id =?",
-    [name, price, max_order, tempImgs, description, id]
-  );
-
-  res.send(editedItem);
-});
-
-router.delete("/deleteitem", verifyJWT, async (req, res) => {
-  const id = req.body.id;
-  const [delItem] = await dbP.execute("DELETE FROM giftshop WHERE id = ?", [
-    id
-  ]);
-
-  res.send(delItem);
-});
+        res.send(delItem);
+    });
 
 module.exports = router;
