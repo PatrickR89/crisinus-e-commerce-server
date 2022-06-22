@@ -10,60 +10,66 @@ const router = express.Router();
 let dbP;
 
 const connection = async () => {
-  dbP = await dbAuth;
+    dbP = await dbAuth;
 };
 
 connection();
 
-router.post("/addnews", verifyJWT, async (req, res) => {
-  const title = req.body.title;
-  const images = req.body.images;
-  const text = req.body.text;
+router
+    .route("/")
+    .get(async (req, res) => {
+        const [news] = await dbP.execute("SELECT * FROM news");
+        res.send(news);
+    })
+    .post(verifyJWT, async (req, res) => {
+        const title = req.body.title;
+        const images = req.body.images;
+        const text = req.body.text;
 
-  const date = Date.now();
-  const today = new Date(date);
+        const date = Date.now();
+        const today = new Date(date);
 
-  const [addNews] = await dbP.execute(
-    "INSERT INTO news (id, title, text, images, date) VALUES (?, ?, ?, ?, ?)",
-    [uuidv4(), title, text, images, today]
-  );
+        const [addNews] = await dbP.execute(
+            "INSERT INTO news (id, title, text, images, date) VALUES (?, ?, ?, ?, ?)",
+            [uuidv4(), title, text, images, today]
+        );
 
-  res.send(addNews);
-});
+        res.send(addNews);
+    });
 
-router.get("/getnews", async (req, res) => {
-  const [news] = await dbP.execute("SELECT * FROM news");
-  res.send(news);
-});
+router
+    .route("/:id")
+    .post(verifyJWT, async (req, res) => {
+        const id = req.body.id;
+        const [newsById] = await dbP.execute(
+            "SELECT * FROM news WHERE id = ?",
+            [id]
+        );
+        res.send(newsById);
+    })
+    .put(verifyJWT, async (req, res) => {
+        const id = req.body.id;
+        const title = req.body.title;
+        const images = req.body.images;
+        const text = req.body.text;
 
-router.post("/newsbyid", verifyJWT, async (req, res) => {
-  const id = req.body.id;
-  const [newsById] = await dbP.execute("SELECT * FROM news WHERE id = ?", [id]);
-  res.send(newsById);
-});
+        const date = Date.now();
+        const today = new Date(date);
 
-router.put("/editnews", verifyJWT, async (req, res) => {
-  const id = req.body.id;
-  const title = req.body.title;
-  const images = req.body.images;
-  const text = req.body.text;
+        const [editedNews] = await dbP.execute(
+            "UPDATE news SET title = ?, text = ?, images = ?, date = ? WHERE id = ?",
+            [title, text, images, today, id]
+        );
 
-  const date = Date.now();
-  const today = new Date(date);
+        res.send(editedNews);
+    })
+    .delete(verifyJWT, async (req, res) => {
+        const id = req.body.id;
+        const [delItem] = await dbP.execute("DELETE FROM news WHERE id = ?", [
+            id
+        ]);
 
-  const [editedNews] = await dbP.execute(
-    "UPDATE news SET title = ?, text = ?, images = ?, date = ? WHERE id = ?",
-    [title, text, images, today, id]
-  );
-
-  res.send(editedNews);
-});
-
-router.delete("/deletenews", verifyJWT, async (req, res) => {
-  const id = req.body.id;
-  const [delItem] = await dbP.execute("DELETE FROM news WHERE id = ?", [id]);
-
-  res.send(delItem);
-});
+        res.send(delItem);
+    });
 
 module.exports = router;
