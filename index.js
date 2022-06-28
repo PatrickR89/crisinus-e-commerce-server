@@ -15,6 +15,8 @@ const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
+const mailchimp = require("@mailchimp/mailchimp_marketing");
+
 const { dbAuth } = require("./mySqlConnection");
 
 const { verifyJWT } = require("./JWT/jwtMiddleware");
@@ -84,6 +86,18 @@ const connection = async () => {
 };
 
 connection();
+
+mailchimp.setConfig({
+    apiKey: process.env.MAILCHIMP_API_KEY,
+    server: process.env.MAILCHIMP_SERVER_PREFIX
+});
+
+async function callPing() {
+    const response = await mailchimp.ping.get();
+    console.log(response);
+}
+
+callPing();
 
 app.use("/books", bookRoutes);
 app.use("/authors", authorRoutes);
@@ -183,7 +197,23 @@ app.post("/newsletter", async (req, res) => {
             "INSERT INTO newsletter (email) VALUES (?)",
             [email]
         );
-        res.send(`Thank you for your subscription on ${saveEmail[0]}`);
+
+        try {
+            const response = await mailchimp.lists.addListMember(
+                process.env.MAILCHIMP_AUDIENCE_ID,
+                {
+                    email_address: email,
+                    status: "subscribed",
+                    email_type: "html"
+                }
+            );
+            res.send(
+                `Thank you for your subscription on ${email}, ${response}`
+            );
+        } catch (err) {
+            console.log(err);
+            res.status(400).send(err);
+        }
     }
 });
 
