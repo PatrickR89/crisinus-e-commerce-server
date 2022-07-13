@@ -1,5 +1,7 @@
 const express = require("express");
 const { dbAuth } = require("../mySqlConnection");
+const { v4: uuidv4 } = require("uuid");
+
 const router = express.Router();
 
 let dbP;
@@ -10,8 +12,15 @@ const connection = async () => {
 
 connection();
 
-router.post("/submitcart", (req, res) => {
+router.post("/submitcart", async (req, res) => {
     console.log(req.body);
+    let orderString = JSON.stringify(req.body);
+
+    await dbP.execute(
+        "INSERT INTO product_orders (id, product_order, order_date, order_status) VALUES (?,?,NOW(),?)",
+        [uuidv4(), orderString, "NEW ORDER"]
+    );
+
     res.send("Order submitted");
 });
 
