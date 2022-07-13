@@ -92,13 +92,6 @@ mailchimp.setConfig({
     server: process.env.MAILCHIMP_SERVER_PREFIX
 });
 
-async function callPing() {
-    const response = await mailchimp.ping.get();
-    console.log(response);
-}
-
-callPing();
-
 app.use("/books", bookRoutes);
 app.use("/authors", authorRoutes);
 app.use("/giftshop", giftshopRoutes);
