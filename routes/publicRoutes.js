@@ -13,19 +13,17 @@ const connection = async () => {
 connection();
 
 router.post("/submitcart", async (req, res) => {
-    console.log(req.body);
     let orderString = JSON.stringify(req.body);
 
     await dbP.execute(
-        "INSERT INTO product_orders (id, product_order, order_date, order_status) VALUES (?,?,DATE_FORMAT(NOW(), '%T %d-%m-%Y'),?)",
-        [uuidv4(), orderString, "NEW ORDER"]
+        "INSERT INTO product_orders ( product_order, order_date, order_status) VALUES (?,DATE_FORMAT(NOW(), '%T %d-%m-%Y'),?)",
+        [orderString, "NEW ORDER"]
     );
 
     res.send("Order submitted");
 });
 
 router.post("/submitmessage", (req, res) => {
-    console.log(req.body);
     res.send("Message sent");
 });
 
