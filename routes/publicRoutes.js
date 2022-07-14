@@ -17,7 +17,7 @@ router.post("/submitcart", async (req, res) => {
     let orderString = JSON.stringify(req.body);
 
     await dbP.execute(
-        "INSERT INTO product_orders (id, product_order, order_date, order_status) VALUES (?,?,NOW(),?)",
+        "INSERT INTO product_orders (id, product_order, order_date, order_status) VALUES (?,?,DATE_FORMAT(NOW(), '%T %d-%m-%Y'),?)",
         [uuidv4(), orderString, "NEW ORDER"]
     );
 
