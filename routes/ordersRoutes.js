@@ -47,4 +47,21 @@ router
         res.send("Order deleted");
     });
 
+router.get("/status", async (req, res) => {
+    const [status] = await dbP.execute(
+        "SELECT order_status FROM product_orders"
+    );
+    const validationArray = [];
+    status.map((order) => {
+        if (order.order_status === "NEW ORDER") {
+            validationArray.push(true);
+        } else {
+            validationArray.push(false);
+        }
+    });
+    const validationValue = validationArray.includes(true);
+
+    res.send(validationValue);
+});
+
 module.exports = router;
