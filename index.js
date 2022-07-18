@@ -137,6 +137,7 @@ app.get("/login", (req, res) => {
 app.get("/logout", (req, res) => {
     res.clearCookie("access-token");
     res.clearCookie("id");
+    req.session.destroy();
     res.end();
 });
 
@@ -157,7 +158,7 @@ app.post("/login", async (req, res) => {
                 req.session.user = user;
                 const id = user[0].id;
                 const token = jwt.sign({ id }, process.env.JWT_SECRET, {
-                    expiresIn: 1800
+                    expiresIn: 1000 * 60 * 60 * 24
                 });
 
                 res.cookie("access-token", token, {
