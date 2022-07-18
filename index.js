@@ -18,8 +18,9 @@ const cookieParser = require("cookie-parser");
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 
 const { dbAuth } = require("./mySqlConnection");
-
 const { verifyJWT } = require("./JWT/jwtMiddleware");
+const { logger } = require("./utils/winstonLogger");
+const { catchRequestError } = require("./utils/catchAsync");
 
 const bookRoutes = require("./routes/bookRoutes");
 const authorRoutes = require("./routes/authorRoutes");
@@ -112,10 +113,9 @@ app.post("/register", (req, res) => {
             "INSERT INTO users (id, username, password) VALUES (?, ?, ?)",
             [uuidv4(), username, hash],
             (err, result) => {
-                if (err) return console.log(err);
+                if (err) return logger.error(err);
             }
         );
-        console.log(newUser);
     });
 });
 
@@ -137,81 +137,91 @@ app.get("/login", (req, res) => {
 app.get("/logout", (req, res) => {
     res.clearCookie("access-token");
     res.clearCookie("id");
+    logger.info(`User ${req.session.user} logged out`);
     req.session.destroy();
     res.end();
 });
 
-app.post("/login", async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
+app.post(
+    "/login",
+    catchRequestError(async (req, res) => {
+        const username = req.body.username;
+        const password = req.body.password;
 
-    const [user] = await dbP.execute(
-        "SELECT * FROM users WHERE username =?",
-        [username],
-        (err, result) => {
-            if (err) return console.log(err);
-        }
-    );
-    if (user.length > 0) {
-        bcrypt.compare(password, user[0].password, (err, response) => {
-            if (response) {
-                req.session.user = user;
-                const id = user[0].id;
-                const token = jwt.sign({ id }, process.env.JWT_SECRET, {
-                    expiresIn: 1000 * 60 * 60 * 24
-                });
-
-                res.cookie("access-token", token, {
-                    maxAge: 1000 * 60 * 60 * 24,
-                    httpOnly: true
-                });
-                res.json({ auth: true, token: token, result: user });
-            } else {
-                res.json({
-                    auth: false,
-                    message: "No username/password match"
-                });
+        const [user] = await dbP.execute(
+            "SELECT * FROM users WHERE username =?",
+            [username],
+            (err, result) => {
+                if (err) return console.log(err);
             }
-        });
-    } else {
-        res.json({ auth: false, message: "No username/password match" });
-    }
-});
+        );
+        if (user.length > 0) {
+            bcrypt.compare(password, user[0].password, (err, response) => {
+                if (response) {
+                    req.session.user = user;
+                    const id = user[0].id;
+                    const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+                        expiresIn: 1000 * 60 * 60 * 24
+                    });
 
-app.post("/newsletter", async (req, res) => {
-    const email = req.body.email;
+                    res.cookie("access-token", token, {
+                        maxAge: 1000 * 60 * 60 * 24,
+                        httpOnly: true
+                    });
+                    res.json({ auth: true, token: token, result: user });
+                } else {
+                    res.json({
+                        auth: false,
+                        message: "No username/password match"
+                    });
+                }
+            });
+            logger.info(`user ${username} logged in`);
+        } else {
+            res.json({ auth: false, message: "No username/password match" });
+            logger.info(`user ${username} failed to login`);
+        }
+    })
+);
 
-    const [checkEmail] = await dbP.execute(
-        "SELECT * FROM newsletter WHERE email = ?",
-        [email]
-    );
+app.post(
+    "/newsletter",
+    catchRequestError(async (req, res) => {
+        const email = req.body.email;
 
-    if (checkEmail[0]) {
-        res.send("You have already subscribed to our newsletter!");
-    } else {
-        const [saveEmail] = await dbP.execute(
-            "INSERT INTO newsletter (email) VALUES (?)",
+        const [checkEmail] = await dbP.execute(
+            "SELECT * FROM newsletter WHERE email = ?",
             [email]
         );
 
-        try {
-            const response = await mailchimp.lists.addListMember(
-                process.env.MAILCHIMP_AUDIENCE_ID,
-                {
-                    email_address: email,
-                    status: "subscribed",
-                    email_type: "html"
-                }
+        if (checkEmail[0]) {
+            res.send("You have already subscribed to our newsletter!");
+        } else {
+            const [saveEmail] = await dbP.execute(
+                "INSERT INTO newsletter (email) VALUES (?)",
+                [email]
             );
-            res.send(
-                `Thank you for your subscription on ${email}, ${response}`
-            );
-        } catch (err) {
-            console.log(err);
-            res.status(400).send(err);
+
+            try {
+                const response = await mailchimp.lists.addListMember(
+                    process.env.MAILCHIMP_AUDIENCE_ID,
+                    {
+                        email_address: email,
+                        status: "subscribed",
+                        email_type: "html"
+                    }
+                );
+                res.send(
+                    `Thank you for your subscription on ${email}, ${response}`
+                );
+            } catch (err) {
+                console.log(err);
+                logger.error(`Mailchimp response fail: ${err}`);
+                res.status(400).send(err);
+            }
         }
-    }
-});
+    })
+);
 
 app.post("/images/addimages", upload.array("images", 5), (req, res) => {
     const fileList = req.files;
@@ -224,24 +234,31 @@ app.post("/images/addimages", upload.array("images", 5), (req, res) => {
     });
 });
 
-app.post("/images/deleteimages", async (req, res) => {
-    const imgUrl = req.body.url;
-    const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
-    fse.remove(imgUrl, (err) => {
-        if (err) return console.log(err);
-        console.log(newUrl);
-    });
-    const [delImg] = await dbP.execute("DELETE FROM images WHERE source = ?", [
-        imgUrl
-    ]);
-});
+app.post(
+    "/images/deleteimages",
+    catchRequestError(async (req, res) => {
+        const imgUrl = req.body.url;
+        const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
+        fse.remove(imgUrl, (err) => {
+            if (err) return console.log(err);
+            console.log(newUrl);
+        });
+        const [delImg] = await dbP.execute(
+            "DELETE FROM images WHERE source = ?",
+            [imgUrl]
+        );
+    })
+);
 
-app.get("/images/getimages", async (req, res) => {
-    const [imageList] = await dbP.execute("SELECT * FROM images");
-    console.log(imageList);
-    res.send(imageList);
-});
+app.get(
+    "/images/getimages",
+    catchRequestError(async (req, res) => {
+        const [imageList] = await dbP.execute("SELECT * FROM images");
+        res.send(imageList);
+    })
+);
 
 app.listen(3001, () => {
     console.log("app listening on port 3001");
+    // logger.info("app listening on port 3001");
 });
