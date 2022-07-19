@@ -59,7 +59,7 @@ router
                 })
             );
 
-            const [newBook] = await dbP.execute(
+            await dbP.execute(
                 "INSERT INTO books (id, title, images, genre, max_order, price, publisher, language, year, description, authors) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 [
                     uuidv4(),
@@ -75,9 +75,8 @@ router
                     authorsIds
                 ]
             );
-            res.send(newBook);
 
-            // clearList();
+            res.send("new book created");
         })
     );
 
@@ -142,7 +141,7 @@ router
                 })
             );
 
-            const [bookRes] = await dbP.execute(
+            await dbP.execute(
                 "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ?, images = ? WHERE id = ?",
                 [
                     title,
@@ -158,7 +157,7 @@ router
                     id
                 ]
             );
-            res.send(bookRes);
+            res.send("book updated");
         })
     )
     .delete(
@@ -166,11 +165,8 @@ router
         catchRequestError(async (req, res) => {
             const id = req.body.id;
 
-            const [delBook] = await dbP.execute(
-                "DELETE FROM books WHERE id = ?",
-                [id]
-            );
-            res.send(delBook);
+            await dbP.execute("DELETE FROM books WHERE id = ?", [id]);
+            res.send("book deleted");
         })
     );
 

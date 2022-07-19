@@ -26,9 +26,8 @@ router.post(
     "/reset",
     verifyJWT,
     catchRequestError(async (req, res) => {
-        const [delItem] = await dbP.execute("TRUNCATE TABLE info_pages");
-        console.log(delItem);
-        const [insertItems] = await dbP.execute(
+        await dbP.execute("TRUNCATE TABLE info_pages");
+        await dbP.execute(
             `INSERT INTO info_pages (id, title, show_title, images, content) VALUES ('${uuidv4()}', 'about_us','About Us', '[]', '...'), ('${uuidv4()}', 'how_to_order','How to order', '[]', '...'), ('${uuidv4()}', 'general_information','General Information', '[]', '...'), ('${uuidv4()}', 'payment_methods','Payment Methods and Shipping', '[]', '...'), ('${uuidv4()}', 'disclaimer','Disclaimer', '[]', '...');`
         );
     })
@@ -55,12 +54,10 @@ router
             const images = req.body.images;
             const content = req.body.content;
 
-            const [editPage] = await dbP.execute(
+            await dbP.execute(
                 "UPDATE info_pages SET images = ?, content = ? WHERE id = ?",
                 [images, content, id]
             );
-
-            res.send(editPage);
         })
     );
 

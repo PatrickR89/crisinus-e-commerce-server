@@ -46,12 +46,12 @@ router
 
             const tempImgs = JSON.stringify(images);
 
-            const [editedAuthor] = await dbP.execute(
+            await dbP.execute(
                 "UPDATE authors SET name = ?, last_name =?, img =?, url =?, bio =? WHERE id =?",
                 [first_name, last_name, tempImgs, url, bio, id]
             );
 
-            res.send(editedAuthor);
+            res.send("author edited");
         })
     )
     .delete(
@@ -60,10 +60,6 @@ router
             const id = req.body.id;
             const tempId = JSON.stringify(id);
 
-            const [author] = await dbP.execute(
-                "SELECT * FROM authors WHERE id = ?",
-                [id]
-            );
             const [books] = await dbP.execute(
                 `SELECT * FROM books WHERE JSON_CONTAINS(authors, '${tempId}')`
             );
@@ -71,18 +67,16 @@ router
                 const newAuthors = book.authors.filter(
                     (author) => author !== id
                 );
-                const [newAuthorsList] = await dbP.execute(
-                    "UPDATE books SET authors = ? WHERE id = ?",
-                    [newAuthors, book.id]
-                );
+
+                await dbP.execute("UPDATE books SET authors = ? WHERE id = ?", [
+                    newAuthors,
+                    book.id
+                ]);
             });
 
-            const [delAuthor] = await dbP.execute(
-                "DELETE FROM authors WHERE id = ?",
-                [id]
-            );
+            await dbP.execute("DELETE FROM authors WHERE id = ?", [id]);
 
-            res.send(delAuthor);
+            res.send("author deleted");
         })
     );
 

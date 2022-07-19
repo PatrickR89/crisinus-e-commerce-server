@@ -31,6 +31,7 @@ const infoRoutes = require("./routes/infoRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 const linksRoutes = require("./routes/linksRoutes");
 const ordersRoutes = require("./routes/ordersRoutes");
+const sysRoutes = require("./routes/systemRoutes");
 
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
@@ -103,6 +104,7 @@ app.use("/infopages", infoRoutes);
 app.use("/links", linksRoutes);
 app.use("/public", publicRoutes);
 app.use("/orders", ordersRoutes);
+app.use("/system", sysRoutes);
 
 app.post("/register", (req, res) => {
     const username = req.body.username;
