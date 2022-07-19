@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require("uuid");
 
 const { dbAuth } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
-const { logger } = require("../utils/winstonLogger");
 const { catchRequestError } = require("../utils/catchAsync");
 
 const router = express.Router();

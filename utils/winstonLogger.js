@@ -21,4 +21,21 @@ const logger = winston.createLogger({
     ]
 });
 
-module.exports.logger = logger;
+const clientLogger = winston.createLogger({
+    level: "info",
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: "DD-MM-YYYY HH:mm:ss"
+        }),
+        messageFormat
+    ),
+    transports: [
+        new winston.transports.File({
+            filename: "clientApp.log",
+            handleExceptions: true,
+            handleRejections: true
+        })
+    ]
+});
+
+module.exports = { logger, clientLogger };
