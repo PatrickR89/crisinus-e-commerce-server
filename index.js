@@ -51,7 +51,11 @@ const upload = multer({
 
 const app = express();
 
-const allowlist = ["http://localhost:3000", "http://localhost:3001"];
+const allowlist = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://api.hnb.hr/tecajn/v1?valuta=EUR"
+];
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions;
@@ -259,6 +263,13 @@ app.get(
         res.send(imageList);
     })
 );
+
+app.use((err, req, res, next) => {
+    const { status = 500, message = "Something went wrong" } = err;
+
+    res.status(status).render("error", { err });
+    logger.error(`status: ${status}; message: ${message}`);
+});
 
 app.listen(3001, () => {
     console.log("app listening on port 3001");
