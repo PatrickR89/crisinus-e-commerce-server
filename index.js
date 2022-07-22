@@ -18,7 +18,7 @@ const cookieParser = require("cookie-parser");
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 
 const { dbAuth } = require("./mySqlConnection");
-const { verifyJWT } = require("./JWT/jwtMiddleware");
+const { verifyJWT, verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
 const { catchRequestError } = require("./utils/catchAsync");
 
@@ -108,18 +108,18 @@ mailchimp.setConfig({
     server: process.env.MAILCHIMP_SERVER_PREFIX
 });
 
-app.use("/api/books", bookRoutes);
-app.use("/api/authors", authorRoutes);
-app.use("/api/giftshop", giftshopRoutes);
-app.use("/api/reviews", reviewsRoutes);
-app.use("/api/news", newsRoutes);
-app.use("/api/infopages", infoRoutes);
-app.use("/api/links", linksRoutes);
-app.use("/api/public", publicRoutes);
-app.use("/api/orders", ordersRoutes);
-app.use("/api/system", sysRoutes);
+app.use("/api/books", verifyClient, bookRoutes);
+app.use("/api/authors", verifyClient, authorRoutes);
+app.use("/api/giftshop", verifyClient, giftshopRoutes);
+app.use("/api/reviews", verifyClient, reviewsRoutes);
+app.use("/api/news", verifyClient, newsRoutes);
+app.use("/api/infopages", verifyClient, infoRoutes);
+app.use("/api/links", verifyClient, linksRoutes);
+app.use("/api/public", verifyClient, publicRoutes);
+app.use("/api/orders", verifyClient, ordersRoutes);
+app.use("/api/system", verifyClient, sysRoutes);
 
-app.post("/api/register", (req, res) => {
+app.post("/api/register", verifyClient, (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
@@ -134,14 +134,14 @@ app.post("/api/register", (req, res) => {
     });
 });
 
-app.get("/api/authentication", verifyJWT, (req, res) => {
+app.get("/api/authentication", verifyClient, verifyJWT, (req, res) => {
     console.log(req.body);
     const token = req.headers["x-access-token"];
     console.log(token);
     res.send("Authenticated!");
 });
 
-app.get("/api/login", (req, res) => {
+app.get("/api/login", verifyClient, (req, res) => {
     if (req.session.user) {
         res.json({ loggedIn: true, user: req.session.user });
     } else {
@@ -149,7 +149,7 @@ app.get("/api/login", (req, res) => {
     }
 });
 
-app.get("/api/logout", (req, res) => {
+app.get("/api/logout", verifyClient, (req, res) => {
     res.clearCookie("access-token");
     res.clearCookie("id");
     logger.info(`User ${req.session.user} logged out`);
@@ -157,8 +157,23 @@ app.get("/api/logout", (req, res) => {
     res.end();
 });
 
+app.get("/api/client", (req, res) => {
+    const id = uuidv4();
+    const client = `crisinus-client-${id}`;
+    req.session.client = client;
+    const clientToken = jwt.sign({ id }, process.env.JWT_CLIENT_SECRET, {
+        expiresIn: 1000 * 60 * 60 * 24
+    });
+    res.cookie("client-access-token", clientToken, {
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true
+    });
+    res.json({ clientReg: true, clientToken: clientToken, result: client });
+});
+
 app.post(
     "/api/login",
+    verifyClient,
     catchRequestError(async (req, res) => {
         const username = req.body.username;
         const password = req.body.password;
@@ -201,6 +216,7 @@ app.post(
 
 app.post(
     "/api/newsletter",
+    verifyClient,
     catchRequestError(async (req, res) => {
         const email = req.body.email;
 
@@ -238,19 +254,25 @@ app.post(
     })
 );
 
-app.post("/api/images/addimages", upload.array("images", 5), (req, res) => {
-    const fileList = req.files;
-    res.send(fileList);
-    fileList.forEach(async (file) => {
-        const [saveImage] = await dbP.execute(
-            "INSERT INTO images (id, name, source) VALUES (?, ?, ?)",
-            [file.filename, file.originalname, file.path]
-        );
-    });
-});
+app.post(
+    "/api/images/addimages",
+    verifyClient,
+    upload.array("images", 5),
+    (req, res) => {
+        const fileList = req.files;
+        res.send(fileList);
+        fileList.forEach(async (file) => {
+            const [saveImage] = await dbP.execute(
+                "INSERT INTO images (id, name, source) VALUES (?, ?, ?)",
+                [file.filename, file.originalname, file.path]
+            );
+        });
+    }
+);
 
 app.post(
     "/api/images/deleteimages",
+    verifyClient,
     catchRequestError(async (req, res) => {
         const imgUrl = req.body.url;
         const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
@@ -267,6 +289,7 @@ app.post(
 
 app.get(
     "/api/images/getimages",
+    verifyClient,
     catchRequestError(async (req, res) => {
         const [imageList] = await dbP.execute("SELECT * FROM images");
         res.send(imageList);

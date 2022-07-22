@@ -24,4 +24,27 @@ const verifyJWT = (req, res, next) => {
     }
 };
 
-module.exports = { verifyJWT };
+const verifyClient = (req, res, next) => {
+    let token = req.headers["client-access-token"];
+
+    if (token === undefined && req.body.headers) {
+        token = req.body.headers["client-access-token"];
+    }
+
+    if (!token) {
+        logger.warn("Failed attempt to access API without client");
+        res.send("API is for client use only!");
+        return;
+    } else {
+        jwt.verify(token, process.env.JWT_CLIENT_SECRET, (err, decoded) => {
+            if (err) {
+                res.send("Access denied");
+            } else {
+                req.clientId = decoded.id;
+                next();
+            }
+        });
+    }
+};
+
+module.exports = { verifyJWT, verifyClient };
