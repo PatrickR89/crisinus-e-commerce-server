@@ -108,18 +108,18 @@ mailchimp.setConfig({
     server: process.env.MAILCHIMP_SERVER_PREFIX
 });
 
-app.use("/books", bookRoutes);
-app.use("/authors", authorRoutes);
-app.use("/giftshop", giftshopRoutes);
-app.use("/reviews", reviewsRoutes);
-app.use("/news", newsRoutes);
-app.use("/infopages", infoRoutes);
-app.use("/links", linksRoutes);
-app.use("/public", publicRoutes);
-app.use("/orders", ordersRoutes);
-app.use("/system", sysRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/authors", authorRoutes);
+app.use("/api/giftshop", giftshopRoutes);
+app.use("/api/reviews", reviewsRoutes);
+app.use("/api/news", newsRoutes);
+app.use("/api/infopages", infoRoutes);
+app.use("/api/links", linksRoutes);
+app.use("/api/public", publicRoutes);
+app.use("/api/orders", ordersRoutes);
+app.use("/api/system", sysRoutes);
 
-app.post("/register", (req, res) => {
+app.post("/api/register", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
@@ -134,14 +134,14 @@ app.post("/register", (req, res) => {
     });
 });
 
-app.get("/authentication", verifyJWT, (req, res) => {
+app.get("/api/authentication", verifyJWT, (req, res) => {
     console.log(req.body);
     const token = req.headers["x-access-token"];
     console.log(token);
     res.send("Authenticated!");
 });
 
-app.get("/login", (req, res) => {
+app.get("/api/login", (req, res) => {
     if (req.session.user) {
         res.json({ loggedIn: true, user: req.session.user });
     } else {
@@ -149,7 +149,7 @@ app.get("/login", (req, res) => {
     }
 });
 
-app.get("/logout", (req, res) => {
+app.get("/api/logout", (req, res) => {
     res.clearCookie("access-token");
     res.clearCookie("id");
     logger.info(`User ${req.session.user} logged out`);
@@ -158,7 +158,7 @@ app.get("/logout", (req, res) => {
 });
 
 app.post(
-    "/login",
+    "/api/login",
     catchRequestError(async (req, res) => {
         const username = req.body.username;
         const password = req.body.password;
@@ -200,7 +200,7 @@ app.post(
 );
 
 app.post(
-    "/newsletter",
+    "/api/newsletter",
     catchRequestError(async (req, res) => {
         const email = req.body.email;
 
@@ -238,7 +238,7 @@ app.post(
     })
 );
 
-app.post("/images/addimages", upload.array("images", 5), (req, res) => {
+app.post("/api/images/addimages", upload.array("images", 5), (req, res) => {
     const fileList = req.files;
     res.send(fileList);
     fileList.forEach(async (file) => {
@@ -250,7 +250,7 @@ app.post("/images/addimages", upload.array("images", 5), (req, res) => {
 });
 
 app.post(
-    "/images/deleteimages",
+    "/api/images/deleteimages",
     catchRequestError(async (req, res) => {
         const imgUrl = req.body.url;
         const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
@@ -266,7 +266,7 @@ app.post(
 );
 
 app.get(
-    "/images/getimages",
+    "/api/images/getimages",
     catchRequestError(async (req, res) => {
         const [imageList] = await dbP.execute("SELECT * FROM images");
         res.send(imageList);
