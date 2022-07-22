@@ -33,6 +33,14 @@ const linksRoutes = require("./routes/linksRoutes");
 const ordersRoutes = require("./routes/ordersRoutes");
 const sysRoutes = require("./routes/systemRoutes");
 
+let dbP;
+
+const connection = async () => {
+    dbP = await dbAuth;
+};
+
+connection();
+
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
         callBack(null, "uploads");
@@ -52,20 +60,29 @@ const upload = multer({
 const app = express();
 
 const allowlist = [
-    "http://localhost:3000",
-    "http://localhost:3001",
+    "http://localhost:3000/",
+    "http://localhost:3001/",
     "https://api.hnb.hr/tecajn/v1?valuta=EUR"
 ];
 
-var corsOptionsDelegate = function (req, callback) {
+function corsOptionsDelegate(req, callback) {
     var corsOptions;
-    if (allowlist.includes(req.header("Origin"))) {
+    if (allowlist.indexOf(req.header("Origin")) !== -1) {
         corsOptions = { origin: true };
     } else {
         corsOptions = { origin: false };
     }
-    callback(null, corsOptions);
-};
+    return callback(null, corsOptions);
+}
+
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000/");
+    res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    next();
+});
 
 app.use(cors(corsOptionsDelegate));
 app.use(express.json());
@@ -85,14 +102,6 @@ app.use(
         }
     })
 );
-
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
 
 mailchimp.setConfig({
     apiKey: process.env.MAILCHIMP_API_KEY,
