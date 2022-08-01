@@ -157,18 +157,24 @@ app.get("/api/logout", verifyClient, (req, res) => {
     res.end();
 });
 
-app.get("/api/client", (req, res) => {
-    const id = uuidv4();
-    const client = `crisinus-client-${id}`;
-    req.session.client = client;
-    const clientToken = jwt.sign({ id }, process.env.JWT_CLIENT_SECRET, {
-        expiresIn: 1000 * 60 * 60 * 24
-    });
-    res.cookie("client-access-token", clientToken, {
-        maxAge: 1000 * 60 * 60 * 24,
-        httpOnly: true
-    });
-    res.json({ clientReg: true, clientToken: clientToken, result: client });
+app.post("/api/client", (req, res, next) => {
+    const initialClient = req.body.headers["client-access-init"];
+
+    if (initialClient == "crisinus-client-net") {
+        const id = uuidv4();
+        const client = `crisinus-client-${id}`;
+        req.session.client = client;
+        const clientToken = jwt.sign({ id }, process.env.JWT_CLIENT_SECRET, {
+            expiresIn: 1000 * 60 * 60 * 24
+        });
+        res.cookie("client-access-token", clientToken, {
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true
+        });
+        res.json({ clientReg: true, clientToken: clientToken, result: client });
+    } else {
+        res.send("API is for Crisinus client use only!");
+    }
 });
 
 app.post(
