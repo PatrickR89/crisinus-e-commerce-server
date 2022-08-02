@@ -135,9 +135,8 @@ app.post("/api/register", verifyClient, (req, res) => {
 });
 
 app.get("/api/authentication", verifyClient, verifyJWT, (req, res) => {
-    console.log(req.body);
     const token = req.headers["x-access-token"];
-    console.log(token);
+    logger.info(token);
     res.send("Authenticated!");
 });
 
@@ -157,7 +156,7 @@ app.get("/api/logout", verifyClient, (req, res) => {
     res.end();
 });
 
-app.post("/api/client", (req, res, next) => {
+app.post("/api/client", (req, res) => {
     const initialClient = req.body.headers["client-access-init"];
 
     if (initialClient == "crisinus-client-net") {
@@ -175,6 +174,17 @@ app.post("/api/client", (req, res, next) => {
     } else {
         res.send("API is for Crisinus client use only!");
     }
+});
+
+app.get("/api/cookiesmodal", verifyClient, (req, res) => {
+    res.cookie("cookies-modal", false, {
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true
+    });
+});
+
+app.get("/api/cookiesconfirm", verifyClient, (req, res) => {
+    res.json({ cookiesModal: req.cookies["cookies-modal"] });
 });
 
 app.post(
@@ -305,7 +315,7 @@ app.get(
 app.use((err, req, res, next) => {
     const { status = 500, message = "Something went wrong" } = err;
 
-    res.status(status).render("error", { err });
+    res.status(status).send(err);
     logger.error(`status: ${status}; message: ${message}`);
 });
 
