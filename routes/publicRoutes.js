@@ -2,6 +2,7 @@ const express = require("express");
 const { dbAuth } = require("../mySqlConnection");
 
 const { catchRequestError } = require("../utils/catchAsync");
+const { validateMessage } = require("../utils/middleware");
 
 const router = express.Router();
 
@@ -27,8 +28,9 @@ router.post(
     })
 );
 
-router.post("/submitmessage", (req, res) => {
-    res.send("Message sent");
+router.post("/submitmessage", validateMessage, (req, res) => {
+    const message = req.body;
+    console.log(message);
 });
 
 router

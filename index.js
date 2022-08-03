@@ -166,13 +166,14 @@ app.post("/api/client", (req, res) => {
         const clientToken = jwt.sign({ id }, process.env.JWT_CLIENT_SECRET, {
             expiresIn: 1000 * 60 * 60 * 24
         });
+
         res.cookie("client-access-token", clientToken, {
             maxAge: 1000 * 60 * 60 * 24,
             httpOnly: true
         });
         res.json({ clientReg: true, clientToken: clientToken, result: client });
     } else {
-        res.send("API is for Crisinus client use only!");
+        res.send("API is for Crisinus client use only! xxx");
     }
 });
 
