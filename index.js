@@ -171,17 +171,20 @@ app.post("/api/client", (req, res) => {
             maxAge: 1000 * 60 * 60 * 24,
             httpOnly: true
         });
+
         res.json({ clientReg: true, clientToken: clientToken, result: client });
     } else {
         res.send("API is for Crisinus client use only! xxx");
     }
 });
 
-app.get("/api/cookiesmodal", verifyClient, (req, res) => {
+app.get("/api/cookiesmodal", (req, res) => {
     res.cookie("cookies-modal", false, {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true
     });
+
+    res.end();
 });
 
 app.get("/api/cookiesconfirm", verifyClient, (req, res) => {

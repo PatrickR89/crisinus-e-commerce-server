@@ -26,13 +26,13 @@ const verifyJWT = (req, res, next) => {
 
 const verifyClient = (req, res, next) => {
     let token = req.headers["client-access-token"];
-
+    const path = req._parsedOriginalUrl.pathname;
     if (token === undefined && req.body.headers) {
         token = req.body.headers["client-access-token"];
     }
 
     if (!token) {
-        logger.warn("Failed attempt to access API without client");
+        logger.warn(`Failed attempt to access API without client from ${path}`);
         res.send("API is for client use only!");
         return;
     } else {
