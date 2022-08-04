@@ -34,8 +34,13 @@ router.post(
     catchRequestError(async (req, res) => {
         const message = req.body.contactForm;
         await dbP.execute(
-            "INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)",
-            [message.contactName, message.contactEmail, message.contactMessage]
+            "INSERT INTO contact_messages (name, email, message, date, status) VALUES (?, ?, ?, DATE_FORMAT(NOW(), '%T %d-%m-%Y'), ?)",
+            [
+                message.contactName,
+                message.contactEmail,
+                message.contactMessage,
+                "NEW"
+            ]
         );
         res.json({ status: 200, message: "message sent" });
     })

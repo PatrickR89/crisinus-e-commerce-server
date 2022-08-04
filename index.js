@@ -32,6 +32,7 @@ const publicRoutes = require("./routes/publicRoutes");
 const linksRoutes = require("./routes/linksRoutes");
 const ordersRoutes = require("./routes/ordersRoutes");
 const sysRoutes = require("./routes/systemRoutes");
+const messagesRoutes = require("./routes/messagesRoutes");
 
 let dbP;
 
@@ -118,6 +119,7 @@ app.use("/api/links", verifyClient, linksRoutes);
 app.use("/api/public", verifyClient, publicRoutes);
 app.use("/api/orders", verifyClient, ordersRoutes);
 app.use("/api/system", verifyClient, sysRoutes);
+app.use("/api/messages", verifyClient, messagesRoutes);
 
 app.post("/api/register", verifyClient, (req, res) => {
     const username = req.body.username;
