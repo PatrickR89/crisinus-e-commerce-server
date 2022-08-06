@@ -1,25 +1,17 @@
 const express = require("express");
-const { dbAuth } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../mySqlConnection");
 
 const { catchRequestError } = require("../utils/catchAsync");
 const { validateMessage } = require("../utils/middleware");
 
 const router = express.Router();
 
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
-
 router.post(
     "/submitcart",
     catchRequestError(async (req, res) => {
         let orderString = JSON.stringify(req.body);
 
-        await dbP.execute(
+        await dbPoolPromise.execute(
             "INSERT INTO product_orders ( product_order, order_date, order_status) VALUES (?,DATE_FORMAT(NOW(), '%T %d-%m-%Y'),?)",
             [orderString, "NEW ORDER"]
         );
@@ -33,7 +25,7 @@ router.post(
     validateMessage,
     catchRequestError(async (req, res) => {
         const message = req.body.contactForm;
-        await dbP.execute(
+        await dbPoolPromise.execute(
             "INSERT INTO contact_messages (name, email, message, date, status) VALUES (?, ?, ?, DATE_FORMAT(NOW(), '%T %d-%m-%Y'), ?)",
             [
                 message.contactName,
@@ -50,13 +42,13 @@ router
     .route("/books")
     .get(
         catchRequestError(async (req, res) => {
-            const [books] = await dbP.execute("SELECT * FROM books");
+            const [books] = await dbPoolPromise.execute("SELECT * FROM books");
 
             await Promise.all(
                 books.map(async (book) => {
                     const authorNames = Promise.all(
                         book.authors.map(async (author) => {
-                            const authorDB = await dbP
+                            const authorDB = await dbPoolPromise
                                 .execute(
                                     "SELECT name, last_name FROM authors WHERE id = ?",
                                     [author]
@@ -79,7 +71,7 @@ router
     .post(
         catchRequestError(async (req, res) => {
             const id = req.body.id;
-            const [book] = await dbP.execute(
+            const [book] = await dbPoolPromise.execute(
                 "SELECT * FROM books WHERE id = ?",
                 [id]
             );
@@ -88,7 +80,7 @@ router
 
             const authorNames = Promise.all(
                 book[0].authors.map(async (author) => {
-                    const authorDB = await dbP
+                    const authorDB = await dbPoolPromise
                         .execute(
                             "SELECT name, last_name FROM authors WHERE id = ?",
                             [author]
@@ -110,7 +102,7 @@ router
     .route("/gifts")
     .get(
         catchRequestError(async (req, res) => {
-            const [gifts] = await dbP.execute(
+            const [gifts] = await dbPoolPromise.execute(
                 "SELECT id, name, price, images FROM giftshop"
             );
             res.send(gifts);
@@ -119,7 +111,7 @@ router
     .post(
         catchRequestError(async (req, res) => {
             const id = req.body.id;
-            const [gift] = await dbP.execute(
+            const [gift] = await dbPoolPromise.execute(
                 "SELECT * FROM giftshop WHERE id = ?",
                 [id]
             );
@@ -131,14 +123,14 @@ router
     .route("/news")
     .get(
         catchRequestError(async (req, res) => {
-            const [news] = await dbP.execute("SELECT * FROM news");
+            const [news] = await dbPoolPromise.execute("SELECT * FROM news");
             res.send(news);
         })
     )
     .post(
         catchRequestError(async (req, res) => {
             const id = req.body.id;
-            const [news] = await dbP.execute(
+            const [news] = await dbPoolPromise.execute(
                 "SELECT * FROM news WHERE id = ?",
                 [id]
             );
@@ -149,7 +141,9 @@ router
 router.get(
     "/informations",
     catchRequestError(async (req, res) => {
-        const [informations] = await dbP.execute("SELECT * FROM info_pages");
+        const [informations] = await dbPoolPromise.execute(
+            "SELECT * FROM info_pages"
+        );
         res.send(informations);
     })
 );
@@ -157,7 +151,7 @@ router.get(
 router.get(
     "/reviews",
     catchRequestError(async (req, res) => {
-        const [reviews] = await dbP.execute("SELECT * FROM ratings");
+        const [reviews] = await dbPoolPromise.execute("SELECT * FROM ratings");
         res.send(reviews);
     })
 );
@@ -166,10 +160,10 @@ router
     .route("/authors")
     .get(
         catchRequestError(async (req, res) => {
-            const [authors] = await dbP.execute(
+            const [authors] = await dbPoolPromise.execute(
                 "SELECT id, name, last_name FROM authors"
             );
-            const [books] = await dbP.execute(
+            const [books] = await dbPoolPromise.execute(
                 "SELECT id, title, images, price, authors FROM books"
             );
 
@@ -179,7 +173,7 @@ router
     .post(
         catchRequestError(async (req, res) => {
             const authorID = req.body.author;
-            const [author] = await dbP.execute(
+            const [author] = await dbPoolPromise.execute(
                 "SELECT * FROM authors WHERE id = ?",
                 [authorID]
             );
@@ -189,7 +183,9 @@ router
 
 router.route("/links").get(
     catchRequestError(async (req, res) => {
-        const [links] = await dbP.execute("SELECT * FROM anchor_links");
+        const [links] = await dbPoolPromise.execute(
+            "SELECT * FROM anchor_links"
+        );
         res.send(links);
     })
 );

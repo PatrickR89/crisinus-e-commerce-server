@@ -17,7 +17,7 @@ const cookieParser = require("cookie-parser");
 
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 
-const { dbAuth } = require("./mySqlConnection");
+const { dbPoolPromise } = require("./mySqlConnection");
 const { verifyJWT, verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
 const { catchRequestError } = require("./utils/catchAsync");
@@ -33,14 +33,6 @@ const linksRoutes = require("./routes/linksRoutes");
 const ordersRoutes = require("./routes/ordersRoutes");
 const sysRoutes = require("./routes/systemRoutes");
 const messagesRoutes = require("./routes/messagesRoutes");
-
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
 
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
@@ -126,7 +118,7 @@ app.post("/api/register", verifyClient, (req, res) => {
     const password = req.body.password;
 
     bcrypt.hash(password, 10, async (err, hash) => {
-        const [newUser] = await dbP.execute(
+        const [newUser] = await dbPoolPromise.execute(
             "INSERT INTO users (id, username, password) VALUES (?, ?, ?)",
             [uuidv4(), username, hash],
             (err, result) => {
@@ -190,7 +182,13 @@ app.get("/api/cookiesmodal", (req, res) => {
 });
 
 app.get("/api/cookiesconfirm", verifyClient, (req, res) => {
-    res.json({ cookiesModal: req.cookies["cookies-modal"] });
+    const tempCookie = req.cookies["cookies-modal"];
+
+    if (typeof tempCookie === typeof true) {
+        res.json({ cookiesModal: tempCookie });
+    } else {
+        res.json({ cookiesModal: true });
+    }
 });
 
 app.post(
@@ -200,7 +198,7 @@ app.post(
         const username = req.body.username;
         const password = req.body.password;
 
-        const [user] = await dbP.execute(
+        const [user] = await dbPoolPromise.execute(
             "SELECT * FROM users WHERE username =?",
             [username],
             (err, result) => {
@@ -242,7 +240,7 @@ app.post(
     catchRequestError(async (req, res) => {
         const email = req.body.email;
 
-        const [checkEmail] = await dbP.execute(
+        const [checkEmail] = await dbPoolPromise.execute(
             "SELECT * FROM newsletter WHERE email = ?",
             [email]
         );
@@ -250,7 +248,7 @@ app.post(
         if (checkEmail[0]) {
             res.send("You have already subscribed to our newsletter!");
         } else {
-            const [saveEmail] = await dbP.execute(
+            const [saveEmail] = await dbPoolPromise.execute(
                 "INSERT INTO newsletter (email) VALUES (?)",
                 [email]
             );
@@ -284,7 +282,7 @@ app.post(
         const fileList = req.files;
         res.send(fileList);
         fileList.forEach(async (file) => {
-            const [saveImage] = await dbP.execute(
+            const [saveImage] = await dbPoolPromise.execute(
                 "INSERT INTO images (id, name, source) VALUES (?, ?, ?)",
                 [file.filename, file.originalname, file.path]
             );
@@ -302,7 +300,7 @@ app.post(
             if (err) return console.log(err);
             console.log(newUrl);
         });
-        const [delImg] = await dbP.execute(
+        const [delImg] = await dbPoolPromise.execute(
             "DELETE FROM images WHERE source = ?",
             [imgUrl]
         );
@@ -313,7 +311,7 @@ app.get(
     "/api/images/getimages",
     verifyClient,
     catchRequestError(async (req, res) => {
-        const [imageList] = await dbP.execute("SELECT * FROM images");
+        const [imageList] = await dbPoolPromise.execute("SELECT * FROM images");
         res.send(imageList);
     })
 );

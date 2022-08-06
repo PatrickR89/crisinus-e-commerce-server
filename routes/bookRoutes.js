@@ -2,31 +2,25 @@ const express = require("express");
 
 const { v4: uuidv4 } = require("uuid");
 
-const { dbAuth } = require("../mySqlConnection");
+const { dbAuth, dbPoolPromise } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 
 const router = express.Router();
 
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
-
 router
     .route("/")
     .get(
         catchRequestError(async (req, res) => {
-            const [result] = await dbP.execute("SELECT * FROM books");
+            const [result] = await dbPoolPromise.execute("SELECT * FROM books");
             res.send(result);
         })
     )
     .post(
         verifyJWT,
         catchRequestError(async (req, res) => {
+            const dbP = await dbAuth;
+
             const title = req.body.title;
             const genre = req.body.genre;
             const max_order = req.body.maxOrder;
@@ -85,6 +79,8 @@ router
     .post(
         verifyJWT,
         catchRequestError(async (req, res) => {
+            const dbP = await dbAuth;
+
             const id = req.body.id;
 
             const [book] = await dbP.execute(
@@ -102,12 +98,14 @@ router
                     });
                 })
             );
+
             res.send([book[0], authors]);
         })
     )
     .put(
         verifyJWT,
         catchRequestError(async (req, res) => {
+            const dbP = await dbAuth;
             const title = req.body.title;
             const genre = req.body.genre;
             const max_order = req.body.maxOrder;
@@ -157,6 +155,7 @@ router
                     id
                 ]
             );
+
             res.send("book updated");
         })
     )
@@ -165,7 +164,7 @@ router
         catchRequestError(async (req, res) => {
             const id = req.body.id;
 
-            await dbP.execute("DELETE FROM books WHERE id = ?", [id]);
+            await dbPoolPromise.execute("DELETE FROM books WHERE id = ?", [id]);
             res.send("book deleted");
         })
     );

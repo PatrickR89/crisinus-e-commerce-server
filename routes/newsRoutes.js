@@ -2,25 +2,17 @@ const express = require("express");
 
 const { v4: uuidv4 } = require("uuid");
 
-const { dbAuth } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 
 const router = express.Router();
 
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
-
 router
     .route("/")
     .get(
         catchRequestError(async (req, res) => {
-            const [news] = await dbP.execute("SELECT * FROM news");
+            const [news] = await dbPoolPromise.execute("SELECT * FROM news");
             res.send(news);
         })
     )
@@ -34,7 +26,7 @@ router
             const date = Date.now();
             const today = new Date(date);
 
-            const [addNews] = await dbP.execute(
+            const [addNews] = await dbPoolPromise.execute(
                 "INSERT INTO news (id, title, text, images, date) VALUES (?, ?, ?, ?, ?)",
                 [uuidv4(), title, text, images, today]
             );
@@ -49,7 +41,7 @@ router
         verifyJWT,
         catchRequestError(async (req, res) => {
             const id = req.body.id;
-            const [newsById] = await dbP.execute(
+            const [newsById] = await dbPoolPromise.execute(
                 "SELECT * FROM news WHERE id = ?",
                 [id]
             );
@@ -67,7 +59,7 @@ router
             const date = Date.now();
             const today = new Date(date);
 
-            const [editedNews] = await dbP.execute(
+            const [editedNews] = await dbPoolPromise.execute(
                 "UPDATE news SET title = ?, text = ?, images = ?, date = ? WHERE id = ?",
                 [title, text, images, today, id]
             );
@@ -79,7 +71,7 @@ router
         verifyJWT,
         catchRequestError(async (req, res) => {
             const id = req.body.id;
-            const [delItem] = await dbP.execute(
+            const [delItem] = await dbPoolPromise.execute(
                 "DELETE FROM news WHERE id = ?",
                 [id]
             );

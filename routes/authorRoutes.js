@@ -1,22 +1,14 @@
 const express = require("express");
 
-const { dbAuth } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 
 const router = express.Router();
 
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
-
 router.route("/").get(
     catchRequestError(async (req, res) => {
-        const [authors] = await dbP.execute("SELECT * FROM authors");
+        const [authors] = await dbPoolPromise.execute("SELECT * FROM authors");
         res.send(authors);
     })
 );
@@ -27,7 +19,7 @@ router
         catchRequestError(async (req, res) => {
             const id = req.body.id;
 
-            const [author] = await dbP.execute(
+            const [author] = await dbPoolPromise.execute(
                 "SELECT * FROM authors WHERE id = ?",
                 [id]
             );
@@ -46,7 +38,7 @@ router
 
             const tempImgs = JSON.stringify(images);
 
-            await dbP.execute(
+            await dbPoolPromise.execute(
                 "UPDATE authors SET name = ?, last_name =?, img =?, url =?, bio =? WHERE id =?",
                 [first_name, last_name, tempImgs, url, bio, id]
             );
@@ -60,7 +52,7 @@ router
             const id = req.body.id;
             const tempId = JSON.stringify(id);
 
-            const [books] = await dbP.execute(
+            const [books] = await dbPoolPromise.execute(
                 `SELECT * FROM books WHERE JSON_CONTAINS(authors, '${tempId}')`
             );
             books.forEach(async (book) => {
@@ -68,13 +60,15 @@ router
                     (author) => author !== id
                 );
 
-                await dbP.execute("UPDATE books SET authors = ? WHERE id = ?", [
-                    newAuthors,
-                    book.id
-                ]);
+                await dbPoolPromise.execute(
+                    "UPDATE books SET authors = ? WHERE id = ?",
+                    [newAuthors, book.id]
+                );
             });
 
-            await dbP.execute("DELETE FROM authors WHERE id = ?", [id]);
+            await dbPoolPromise.execute("DELETE FROM authors WHERE id = ?", [
+                id
+            ]);
 
             res.send("author deleted");
         })

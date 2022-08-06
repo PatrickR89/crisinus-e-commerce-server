@@ -2,22 +2,14 @@ const express = require("express");
 
 const { v4: uuidv4 } = require("uuid");
 
-const { dbAuth } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 const router = express.Router();
 
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
-
 router.route("/").get(
     catchRequestError(async (req, res) => {
-        const [info] = await dbP.execute("SELECT * FROM info_pages");
+        const [info] = await dbPoolPromise.execute("SELECT * FROM info_pages");
         res.send(info);
     })
 );
@@ -26,8 +18,8 @@ router.post(
     "/reset",
     verifyJWT,
     catchRequestError(async (req, res) => {
-        await dbP.execute("TRUNCATE TABLE info_pages");
-        await dbP.execute(
+        await dbPoolPromise.execute("TRUNCATE TABLE info_pages");
+        await dbPoolPromise.execute(
             `INSERT INTO info_pages (id, title, show_title, images, content) VALUES ('${uuidv4()}', 'about_us','About Us', '[]', '...'), ('${uuidv4()}', 'how_to_order','How to order', '[]', '...'), ('${uuidv4()}', 'general_information','General Information', '[]', '...'), ('${uuidv4()}', 'payment_methods','Payment Methods and Shipping', '[]', '...'), ('${uuidv4()}', 'disclaimer','Disclaimer', '[]', '...');`
         );
     })
@@ -39,7 +31,7 @@ router
         verifyJWT,
         catchRequestError(async (req, res) => {
             const id = req.body.id;
-            const [pageById] = await dbP.execute(
+            const [pageById] = await dbPoolPromise.execute(
                 "SELECT * FROM info_pages WHERE id = ?",
                 [id]
             );
@@ -54,7 +46,7 @@ router
             const images = req.body.images;
             const content = req.body.content;
 
-            await dbP.execute(
+            await dbPoolPromise.execute(
                 "UPDATE info_pages SET images = ?, content = ? WHERE id = ?",
                 [images, content, id]
             );

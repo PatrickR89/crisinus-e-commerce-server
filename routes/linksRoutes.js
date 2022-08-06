@@ -1,24 +1,18 @@
 const express = require("express");
 
-const { dbAuth } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 
 const router = express.Router();
 
-let dbP;
-
-const connection = async () => {
-    dbP = await dbAuth;
-};
-
-connection();
-
 router
     .route("/")
     .get(
         catchRequestError(async (req, res) => {
-            const [links] = await dbP.execute("SELECT * FROM anchor_links");
+            const [links] = await dbPoolPromise.execute(
+                "SELECT * FROM anchor_links"
+            );
             res.send(links);
         })
     )
@@ -27,7 +21,7 @@ router
         catchRequestError(async (req, res) => {
             const id = req.body.id;
 
-            const [link] = await dbP.execute(
+            const [link] = await dbPoolPromise.execute(
                 "SELECT * FROM anchor_links WHERE id = ?",
                 [id]
             );
@@ -41,10 +35,10 @@ router.put(
         const { link } = req.body;
         const { id } = req.params;
 
-        await dbP.execute("UPDATE anchor_links SET link = ? WHERE id = ?", [
-            link,
-            id
-        ]);
+        await dbPoolPromise.execute(
+            "UPDATE anchor_links SET link = ? WHERE id = ?",
+            [link, id]
+        );
     })
 );
 
