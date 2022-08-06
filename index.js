@@ -182,9 +182,9 @@ app.get("/api/cookiesmodal", (req, res) => {
 });
 
 app.get("/api/cookiesconfirm", verifyClient, (req, res) => {
-    const tempCookie = req.cookies["cookies-modal"];
+    const tempCookie = JSON.parse(req.cookies["cookies-modal"]);
 
-    if (typeof tempCookie === typeof true) {
+    if (typeof tempCookie == "boolean") {
         res.json({ cookiesModal: tempCookie });
     } else {
         res.json({ cookiesModal: true });
