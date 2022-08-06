@@ -142,10 +142,6 @@ router.post(
     "/informations",
     catchRequestError(async (req, res) => {
         const pageName = req.body.pageName;
-        console.log(pageName);
-        const [informations] = await dbPoolPromise.execute(
-            "SELECT * FROM info_pages"
-        );
         const [infoPage] = await dbPoolPromise.execute(
             "SELECT * FROM info_pages WHERE title = ?",
             [pageName]
