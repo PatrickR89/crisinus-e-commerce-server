@@ -11,6 +11,7 @@ const fse = require("fs-extra");
 const multer = require("multer");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const path = require("path");
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
@@ -80,6 +81,7 @@ app.use((req, res, next) => {
 app.use(cors(corsOptionsDelegate));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+app.use(express.static(path.resolve(__dirname, "./client")));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -298,7 +300,6 @@ app.post(
         const newUrl = JSON.stringify(`./${imgUrl.replace(/\\/g, "/")}`);
         fse.remove(imgUrl, (err) => {
             if (err) return console.log(err);
-            console.log(newUrl);
         });
         const [delImg] = await dbPoolPromise.execute(
             "DELETE FROM images WHERE source = ?",
@@ -315,6 +316,10 @@ app.get(
         res.send(imageList);
     })
 );
+
+app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "./client", "index.html"));
+});
 
 app.use((err, req, res, next) => {
     const { status = 500, message = "Something went wrong" } = err;
