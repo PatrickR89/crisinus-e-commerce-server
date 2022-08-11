@@ -36,11 +36,14 @@ const checkDB = (req, res, next) => {
         next();
     } catch (error) {
         console.log(error);
+        logger.error(`Database check issue: ${error}`);
     }
 };
 
 function handleDisconnect() {
-    connection = mysql.createPool(poolConnectConfig);
+    if (!connection || connection === undefined) {
+        connection = mysql.createPool(poolConnectConfig);
+    }
 
     connection.getConnection((err, conn) => {
         if (err) {
@@ -49,7 +52,7 @@ function handleDisconnect() {
             }
             if (err.code === "ER_CON_COUNT_ERROR") {
                 logger.error("Database has too many connections.");
-                connection.end();
+                connection.destroy();
             }
             if (err.code === "ECONNREFUSED") {
                 logger.error("Database connection was refused.");
@@ -58,7 +61,7 @@ function handleDisconnect() {
         }
 
         console.log(conn._handshakePacket.connectionId);
-        if (conn) conn.release();
+        if (conn) return conn.release();
         return;
     });
 
