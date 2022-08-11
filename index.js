@@ -18,7 +18,7 @@ const cookieParser = require("cookie-parser");
 
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 
-const { dbPoolPromise } = require("./mySqlConnection");
+const { dbPoolPromise, checkDB } = require("./mySqlConnection");
 const { verifyJWT, verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
 const { catchRequestError } = require("./utils/catchAsync");
@@ -103,17 +103,17 @@ mailchimp.setConfig({
     server: process.env.MAILCHIMP_SERVER_PREFIX
 });
 
-app.use("/api/books", verifyClient, bookRoutes);
-app.use("/api/authors", verifyClient, authorRoutes);
-app.use("/api/giftshop", verifyClient, giftshopRoutes);
-app.use("/api/reviews", verifyClient, reviewsRoutes);
-app.use("/api/news", verifyClient, newsRoutes);
-app.use("/api/infopages", verifyClient, infoRoutes);
-app.use("/api/links", verifyClient, linksRoutes);
-app.use("/api/public", verifyClient, publicRoutes);
-app.use("/api/orders", verifyClient, ordersRoutes);
-app.use("/api/system", verifyClient, sysRoutes);
-app.use("/api/messages", verifyClient, messagesRoutes);
+app.use("/api/books", checkDB, verifyClient, bookRoutes);
+app.use("/api/authors", checkDB, verifyClient, authorRoutes);
+app.use("/api/giftshop", checkDB, verifyClient, giftshopRoutes);
+app.use("/api/reviews", checkDB, verifyClient, reviewsRoutes);
+app.use("/api/news", checkDB, verifyClient, newsRoutes);
+app.use("/api/infopages", checkDB, verifyClient, infoRoutes);
+app.use("/api/links", checkDB, verifyClient, linksRoutes);
+app.use("/api/public", checkDB, verifyClient, publicRoutes);
+app.use("/api/orders", checkDB, verifyClient, ordersRoutes);
+app.use("/api/system", checkDB, verifyClient, sysRoutes);
+app.use("/api/messages", checkDB, verifyClient, messagesRoutes);
 
 app.post("/api/register", verifyClient, (req, res) => {
     const username = req.body.username;

@@ -6,6 +6,8 @@ const { validateMessage } = require("../utils/middleware");
 
 const router = express.Router();
 
+// const dbPoolPromise = createPool();
+
 router.post(
     "/submitcart",
     catchRequestError(async (req, res) => {
@@ -123,6 +125,8 @@ router
     .route("/news")
     .get(
         catchRequestError(async (req, res) => {
+            // const pool = req.connect;
+            // console.log(pool);
             const [news] = await dbPoolPromise.execute("SELECT * FROM news");
             res.send(news);
         })

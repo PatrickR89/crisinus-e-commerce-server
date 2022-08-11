@@ -2,7 +2,26 @@ const mysqlPromise = require("mysql2/promise");
 const mysql = require("mysql2");
 const bluebird = require("bluebird");
 
-module.exports.dbAuth = mysqlPromise.createConnection({
+const { logger } = require("./utils/winstonLogger");
+
+const poolConnectConfig = {
+    user: process.env.MYSQL_USER,
+    host: process.env.MYSQL_HOST,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    waitForConnections: true,
+    connectionLimit: 500,
+    queueLimit: 0,
+    enableKeepAlive: true
+};
+
+var connection;
+
+handleDisconnect();
+
+let dbPoolPromise = connection.promise();
+
+const dbAuth = mysqlPromise.createConnection({
     user: process.env.MYSQL_USER,
     host: process.env.MYSQL_HOST,
     password: process.env.MYSQL_PASSWORD,
@@ -10,14 +29,51 @@ module.exports.dbAuth = mysqlPromise.createConnection({
     Promise: bluebird
 });
 
-const dbPool = mysql.createPool({
-    user: process.env.MYSQL_USER,
-    host: process.env.MYSQL_HOST,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE,
-    waitForConnections: true,
-    connectionLimit: 50,
-    queueLimit: 0
-});
+const checkDB = (req, res, next) => {
+    try {
+        handleDisconnect();
+        dbPoolPromise = connection.promise();
+        next();
+    } catch (error) {
+        console.log(error);
+    }
+};
 
-module.exports.dbPoolPromise = dbPool.promise();
+function handleDisconnect() {
+    connection = mysql.createPool(poolConnectConfig);
+
+    connection.getConnection((err, conn) => {
+        if (err) {
+            if (err.code === "PROTOCOL_CONNECTION_LOST") {
+                logger.error("Database connection was closed.");
+            }
+            if (err.code === "ER_CON_COUNT_ERROR") {
+                logger.error("Database has too many connections.");
+                connection.end();
+            }
+            if (err.code === "ECONNREFUSED") {
+                logger.error("Database connection was refused.");
+            }
+            setTimeout(handleDisconnect, 2000);
+        }
+
+        console.log(conn._handshakePacket.connectionId);
+        if (conn) conn.release();
+        return;
+    });
+
+    connection.on("error", function (err) {
+        console.log("db error", err);
+        if (err.code === "PROTOCOL_CONNECTION_LOST") {
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
+
+module.exports = {
+    dbAuth,
+    dbPoolPromise,
+    checkDB
+};

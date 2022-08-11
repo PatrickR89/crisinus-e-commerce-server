@@ -2,7 +2,7 @@ const express = require("express");
 
 const { v4: uuidv4 } = require("uuid");
 
-const { dbAuth, dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 
@@ -19,8 +19,6 @@ router
     .post(
         verifyJWT,
         catchRequestError(async (req, res) => {
-            const dbP = await dbAuth;
-
             const title = req.body.title;
             const genre = req.body.genre;
             const max_order = req.body.maxOrder;
@@ -37,12 +35,12 @@ router
             const authorsIds = await Promise.all(
                 authors.map((author) => {
                     return new Promise(async (resolve, reject) => {
-                        let [result] = await dbP.execute(
+                        let [result] = await dbPoolPromise.execute(
                             `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
                         );
                         if (result.length < 1) {
                             author["id"] = uuidv4();
-                            let [result] = await dbP.execute(
+                            let [result] = await dbPoolPromise.execute(
                                 "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
                                 [author.id, author.name, author.last_name]
                             );
@@ -53,7 +51,7 @@ router
                 })
             );
 
-            await dbP.execute(
+            const [newBook] = await dbPoolPromise.execute(
                 "INSERT INTO books (id, title, images, genre, max_order, price, publisher, language, year, description, authors) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 [
                     uuidv4(),
@@ -69,7 +67,7 @@ router
                     authorsIds
                 ]
             );
-
+            console.log(newBook);
             res.send("new book created");
         })
     );
@@ -79,11 +77,9 @@ router
     .post(
         verifyJWT,
         catchRequestError(async (req, res) => {
-            const dbP = await dbAuth;
-
             const id = req.body.id;
 
-            const [book] = await dbP.execute(
+            const [book] = await dbPoolPromise.execute(
                 `SELECT * FROM books WHERE id = '${id}'`
             );
             const authorsIds = book[0].authors;
@@ -91,7 +87,7 @@ router
             const authors = await Promise.all(
                 authorsIds.map((authorId) => {
                     return new Promise(async (resolve, reject) => {
-                        const [author] = await dbP.execute(
+                        const [author] = await dbPoolPromise.execute(
                             `SELECT * FROM authors WHERE id = '${authorId}'`
                         );
                         return resolve(author[0]);
@@ -105,7 +101,6 @@ router
     .put(
         verifyJWT,
         catchRequestError(async (req, res) => {
-            const dbP = await dbAuth;
             const title = req.body.title;
             const genre = req.body.genre;
             const max_order = req.body.maxOrder;
@@ -123,12 +118,12 @@ router
             const authorsIds = await Promise.all(
                 authors.map((author) => {
                     return new Promise(async (resolve, reject) => {
-                        let [result] = await dbP.execute(
+                        let [result] = await dbPoolPromise.execute(
                             `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
                         );
                         if (result.length < 1) {
                             author["id"] = uuidv4();
-                            let [result] = await dbP.execute(
+                            let [result] = await dbPoolPromise.execute(
                                 "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
                                 [author.id, author.name, author.last_name]
                             );
@@ -139,7 +134,7 @@ router
                 })
             );
 
-            await dbP.execute(
+            await dbPoolPromise.execute(
                 "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ?, images = ? WHERE id = ?",
                 [
                     title,
