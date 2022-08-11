@@ -35,16 +35,19 @@ router
             const authorsIds = await Promise.all(
                 authors.map((author) => {
                     return new Promise(async (resolve, reject) => {
-                        let [result] = await dbPoolPromise.execute(
+                        let result;
+                        let [resultDB] = await dbPoolPromise.execute(
                             `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
                         );
-                        if (result.length < 1) {
+                        if (resultDB.length < 1) {
                             author["id"] = uuidv4();
-                            let [result] = await dbPoolPromise.execute(
+                            await dbPoolPromise.execute(
                                 "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
                                 [author.id, author.name, author.last_name]
                             );
-                            return result;
+                            result = [author];
+                        } else {
+                            result = resultDB;
                         }
                         return resolve(result[0].id);
                     });
@@ -118,16 +121,19 @@ router
             const authorsIds = await Promise.all(
                 authors.map((author) => {
                     return new Promise(async (resolve, reject) => {
-                        let [result] = await dbPoolPromise.execute(
+                        let result;
+                        let [resultDB] = await dbPoolPromise.execute(
                             `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
                         );
-                        if (result.length < 1) {
+                        if (resultDB.length < 1) {
                             author["id"] = uuidv4();
-                            let [result] = await dbPoolPromise.execute(
+                            await dbPoolPromise.execute(
                                 "INSERT INTO authors (id, name, last_name) VALUES (?,?,?)",
                                 [author.id, author.name, author.last_name]
                             );
-                            return result;
+                            result = [author];
+                        } else {
+                            result = resultDB;
                         }
                         return resolve(result[0].id);
                     });
