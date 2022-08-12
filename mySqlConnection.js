@@ -52,12 +52,15 @@ function handleDisconnect() {
             }
             if (err.code === "ER_CON_COUNT_ERROR") {
                 logger.error("Database has too many connections.");
-                connection.destroy();
             }
             if (err.code === "ECONNREFUSED") {
                 logger.error("Database connection was refused.");
             }
-            setTimeout(handleDisconnect, 2000);
+            connection.destroy();
+            setTimeout(
+                (connection = mysql.createPool(poolConnectConfig)),
+                2000
+            );
         }
 
         console.log(conn._handshakePacket.connectionId);
@@ -68,7 +71,11 @@ function handleDisconnect() {
     connection.on("error", function (err) {
         console.log("db error", err);
         if (err.code === "PROTOCOL_CONNECTION_LOST") {
-            handleDisconnect();
+            connection.destroy();
+            setTimeout(
+                (connection = mysql.createPool(poolConnectConfig)),
+                2000
+            );
         } else {
             throw err;
         }
