@@ -56,6 +56,7 @@ function handleDisconnect() {
             if (err.code === "ECONNREFUSED") {
                 logger.error("Database connection was refused.");
             }
+
             connection.destroy();
             setTimeout(
                 ((connection = mysql.createPool(poolConnectConfig)),
@@ -69,19 +70,19 @@ function handleDisconnect() {
         return;
     });
 
-    connection.on("error", function (err) {
-        console.log("db error", err);
-        if (err.code === "PROTOCOL_CONNECTION_LOST") {
-            connection.destroy();
-            setTimeout(
-                ((connection = mysql.createPool(poolConnectConfig)),
-                (dbPoolPromise = connection.promise())),
-                2000
-            );
-        } else {
-            throw err;
-        }
-    });
+    // connection.on("error", function (err) {
+    //     console.log("db error", err);
+    //     if (err.code === "PROTOCOL_CONNECTION_LOST") {
+    //         connection.destroy();
+    //         setTimeout(
+    //             ((connection = mysql.createPool(poolConnectConfig)),
+    //             (dbPoolPromise = connection.promise())),
+    //             2000
+    //         );
+    //     } else {
+    //         throw err;
+    //     }
+    // });
 }
 
 module.exports = {
