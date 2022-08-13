@@ -115,7 +115,7 @@ app.use("/api/orders", checkDB, verifyClient, ordersRoutes);
 app.use("/api/system", checkDB, verifyClient, sysRoutes);
 app.use("/api/messages", checkDB, verifyClient, messagesRoutes);
 
-app.post("/api/register", verifyClient, (req, res) => {
+app.post("/api/register", checkDB, verifyClient, (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
@@ -195,6 +195,7 @@ app.get("/api/cookiesconfirm", verifyClient, (req, res) => {
 
 app.post(
     "/api/login",
+    checkDB,
     verifyClient,
     catchRequestError(async (req, res) => {
         const username = req.body.username;
@@ -238,6 +239,7 @@ app.post(
 
 app.post(
     "/api/newsletter",
+    checkDB,
     verifyClient,
     catchRequestError(async (req, res) => {
         const email = req.body.email;
@@ -278,6 +280,7 @@ app.post(
 
 app.post(
     "/api/images/addimages",
+    checkDB,
     verifyClient,
     upload.array("images", 5),
     (req, res) => {
@@ -294,6 +297,7 @@ app.post(
 
 app.post(
     "/api/images/deleteimages",
+    checkDB,
     verifyClient,
     catchRequestError(async (req, res) => {
         const imgUrl = req.body.url;
@@ -310,6 +314,7 @@ app.post(
 
 app.get(
     "/api/images/getimages",
+    checkDB,
     verifyClient,
     catchRequestError(async (req, res) => {
         const [imageList] = await dbPoolPromise.execute("SELECT * FROM images");
@@ -317,7 +322,7 @@ app.get(
     })
 );
 
-app.get("*", (req, res) => {
+app.get("*", checkDB, (req, res) => {
     res.sendFile(path.resolve(__dirname, "./client", "index.html"));
 });
 
