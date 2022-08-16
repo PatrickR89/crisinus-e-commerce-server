@@ -16,6 +16,7 @@ const poolConnectConfig = {
 };
 
 var connection = mysql.createPool(poolConnectConfig);
+let handleEndConnection;
 
 handleDisconnect();
 
@@ -33,7 +34,6 @@ const checkDB = (req, res, next) => {
     // const path = req._parsedOriginalUrl.pathname;
     try {
         handleDisconnect();
-        // console.log(path);
         next();
     } catch (error) {
         logger.error(`Database check issue: ${error}`);
@@ -44,6 +44,8 @@ function handleDisconnect() {
     if (!connection || connection === undefined) {
         connection = mysql.createPool(poolConnectConfig);
     }
+
+    clearTimeout(handleEndConnection);
 
     connection.getConnection((err, conn) => {
         if (err) {
@@ -65,24 +67,13 @@ function handleDisconnect() {
             );
         }
 
-        // console.log(conn._handshakePacket.connectionId);
         if (conn) return conn.release();
         return;
     });
 
-    // connection.on("error", function (err) {
-    //     console.log("db error", err);
-    //     if (err.code === "PROTOCOL_CONNECTION_LOST") {
-    //         connection.destroy();
-    //         setTimeout(
-    //             ((connection = mysql.createPool(poolConnectConfig)),
-    //             (dbPoolPromise = connection.promise())),
-    //             2000
-    //         );
-    //     } else {
-    //         throw err;
-    //     }
-    // });
+    handleEndConnection = setTimeout(() => {
+        connection.end();
+    }, 1000 * 60 * 60 * 4);
 }
 
 module.exports = {
