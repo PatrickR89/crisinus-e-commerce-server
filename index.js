@@ -35,6 +35,8 @@ const ordersRoutes = require("./routes/ordersRoutes");
 const sysRoutes = require("./routes/systemRoutes");
 const messagesRoutes = require("./routes/messagesRoutes");
 
+const port = process.env.PORT || 3001;
+
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
         callBack(null, "uploads");
@@ -333,7 +335,7 @@ app.use((err, req, res, next) => {
     logger.error(`status: ${status}; message: ${message}`);
 });
 
-app.listen(3001, () => {
-    console.log("app listening on port 3001");
+app.listen(port, () => {
+    console.log(`app listening on port ${port}`);
     // logger.info("app listening on port 3001");
 });
