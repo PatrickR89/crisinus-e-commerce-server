@@ -109,7 +109,7 @@ app.use("/api/infopages", checkDB, verifyClient, infoRoutes);
 app.use("/api/links", checkDB, verifyClient, linksRoutes);
 app.use("/api/public", checkDB, verifyClient, publicRoutes);
 app.use("/api/orders", checkDB, verifyClient, ordersRoutes);
-app.use("/api/system", checkDB, verifyClient, sysRoutes);
+app.use("/api/system", checkDB, sysRoutes);
 app.use("/api/messages", checkDB, verifyClient, messagesRoutes);
 
 app.post("/api/register", checkDB, verifyClient, (req, res) => {

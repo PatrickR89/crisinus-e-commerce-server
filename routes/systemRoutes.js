@@ -7,6 +7,7 @@ const mailchimp = require("@mailchimp/mailchimp_marketing");
 const { dbPoolPromise } = require("../mySqlConnection");
 const { catchRequestError } = require("../utils/catchAsync");
 const { clientLogger } = require("../utils/winstonLogger");
+const { verifyClient } = require("../JWT/jwtMiddleware");
 const router = express.Router();
 
 mailchimp.setConfig({
@@ -85,6 +86,7 @@ router.post("/client", (req, res) => {
 
 router.post(
     "/newsletter",
+    verifyClient,
     catchRequestError(async (req, res) => {
         const email = req.body.email;
 
