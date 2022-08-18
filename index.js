@@ -72,7 +72,8 @@ app.use(
         resave: false,
         saveUninitialized: false,
         cookie: {
-            expires: 1000 * 60 * 60 * 24 * 3
+            expires: Date.now() + 1000 * 60 * 60 * 24 * 3,
+            maxAge: 1000 * 60 * 60 * 24 * 3
         }
     })
 );
