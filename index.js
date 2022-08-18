@@ -34,6 +34,7 @@ const linksRoutes = require("./routes/linksRoutes");
 const ordersRoutes = require("./routes/ordersRoutes");
 const sysRoutes = require("./routes/systemRoutes");
 const messagesRoutes = require("./routes/messagesRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const port = process.env.PORT || 3001;
 
@@ -111,87 +112,7 @@ app.use("/api/public", checkDB, verifyClient, publicRoutes);
 app.use("/api/orders", checkDB, verifyClient, ordersRoutes);
 app.use("/api/system", checkDB, sysRoutes);
 app.use("/api/messages", checkDB, verifyClient, messagesRoutes);
-
-app.post("/api/register", checkDB, verifyClient, (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-
-    bcrypt.hash(password, 10, async (err, hash) => {
-        const [newUser] = await dbPoolPromise.execute(
-            "INSERT INTO users (id, username, password) VALUES (?, ?, ?)",
-            [uuidv4(), username, hash],
-            (err, result) => {
-                if (err) return logger.error(err);
-            }
-        );
-    });
-});
-
-app.get("/api/authentication", verifyClient, verifyJWT, (req, res) => {
-    const token = req.headers["x-access-token"];
-    logger.info(token);
-    res.send("Authenticated!");
-});
-
-app.get("/api/login", verifyClient, (req, res) => {
-    if (req.session.user) {
-        res.json({ loggedIn: true, user: req.session.user });
-    } else {
-        res.json({ loggedIn: false });
-    }
-});
-
-app.get("/api/logout", verifyClient, (req, res) => {
-    res.clearCookie("access-token");
-    res.clearCookie("id");
-    logger.info(`User ${req.session.user} logged out`);
-    req.session.destroy();
-    res.end();
-});
-
-app.post(
-    "/api/login",
-    checkDB,
-    verifyClient,
-    catchRequestError(async (req, res) => {
-        const username = req.body.username;
-        const password = req.body.password;
-
-        const [user] = await dbPoolPromise.execute(
-            "SELECT * FROM users WHERE username =?",
-            [username],
-            (err, result) => {
-                if (err) return console.log(err);
-            }
-        );
-        if (user.length > 0) {
-            bcrypt.compare(password, user[0].password, (err, response) => {
-                if (response) {
-                    req.session.user = user;
-                    const id = user[0].id;
-                    const token = jwt.sign({ id }, process.env.JWT_SECRET, {
-                        expiresIn: 1000 * 60 * 60 * 24
-                    });
-
-                    res.cookie("access-token", token, {
-                        maxAge: 1000 * 60 * 60 * 24,
-                        httpOnly: true
-                    });
-                    res.json({ auth: true, token: token, result: user });
-                } else {
-                    res.json({
-                        auth: false,
-                        message: "No username/password match"
-                    });
-                }
-            });
-            logger.info(`user ${username} logged in`);
-        } else {
-            res.json({ auth: false, message: "No username/password match" });
-            logger.info(`user ${username} failed to login`);
-        }
-    })
-);
+app.use("/api/admin", verifyClient, adminRoutes);
 
 app.post(
     "/api/images/addimages",
