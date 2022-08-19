@@ -16,7 +16,6 @@ const poolConnectConfig = {
 };
 
 var connection = mysql.createPool(poolConnectConfig);
-let handleEndConnection;
 
 handleDisconnect();
 
@@ -45,8 +44,6 @@ function handleDisconnect() {
         connection = mysql.createPool(poolConnectConfig);
     }
 
-    clearTimeout(handleEndConnection);
-
     connection.getConnection((err, conn) => {
         if (err) {
             if (err.code === "PROTOCOL_CONNECTION_LOST") {
@@ -70,10 +67,6 @@ function handleDisconnect() {
         if (conn) return conn.release();
         return;
     });
-
-    handleEndConnection = setTimeout(() => {
-        connection.end();
-    }, 1000 * 60 * 60 * 4);
 }
 
 module.exports = {
