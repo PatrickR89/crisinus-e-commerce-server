@@ -14,19 +14,21 @@ const { checkDB } = require("./mySqlConnection");
 const { verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
 
-const bookRoutes = require("./routes/bookRoutes");
-const authorRoutes = require("./routes/authorRoutes");
-const giftshopRoutes = require("./routes/giftshopRoutes");
-const reviewsRoutes = require("./routes/reviewsRoutes");
-const newsRoutes = require("./routes/newsRoutes");
-const infoRoutes = require("./routes/infoRoutes");
-const publicRoutes = require("./routes/publicRoutes");
-const linksRoutes = require("./routes/linksRoutes");
-const ordersRoutes = require("./routes/ordersRoutes");
-const sysRoutes = require("./routes/systemRoutes");
-const messagesRoutes = require("./routes/messagesRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const imageRoutes = require("./routes/imageRoutes");
+const {
+    adminRoutes,
+    authorRoutes,
+    bookRoutes,
+    giftshopRoutes,
+    imageRoutes,
+    infoRoutes,
+    linksRoutes,
+    messagesRoutes,
+    newsRoutes,
+    ordersRoutes,
+    publicRoutes,
+    reviewsRoutes,
+    sysRoutes
+} = require("./routes");
 
 const port = process.env.PORT || 3001;
 
