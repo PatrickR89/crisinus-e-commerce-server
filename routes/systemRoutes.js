@@ -6,6 +6,7 @@ const { verifyClient } = require("../JWT/jwtMiddleware");
 const controller = require("../controllers/system_controller");
 
 router.post("/error", catchRequestError(controller.error));
+
 router.post("/info", catchRequestError(controller.info));
 
 router.get("/currency", catchRequestError(controller.getCurrency));

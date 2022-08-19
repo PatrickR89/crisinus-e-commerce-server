@@ -1,22 +1,21 @@
 const express = require("express");
-
 const router = express.Router();
 
 const { catchRequestError } = require("../utils/catchAsync");
 const { checkDB } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
-const admin = require("../controllers/admin_controllers");
+const controller = require("../controllers/admin_controllers");
 
 router
     .route("/register")
-    .get(verifyJWT, admin.getReg)
-    .post(checkDB, admin.register);
+    .get(verifyJWT, controller.getReg)
+    .post(checkDB, controller.register);
 
 router
     .route("/login")
-    .get(admin.checkLogin)
-    .post(checkDB, catchRequestError(admin.login));
+    .get(controller.checkLogin)
+    .post(checkDB, catchRequestError(controller.login));
 
-router.get("/logout", admin.logout);
+router.get("/logout", controller.logout);
 
 module.exports = router;

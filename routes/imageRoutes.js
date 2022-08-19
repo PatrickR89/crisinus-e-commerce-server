@@ -1,11 +1,10 @@
 const express = require("express");
+const router = express.Router();
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
-const router = express.Router();
-
 const { catchRequestError } = require("../utils/catchAsync");
-const image = require("../controllers/image_controllers");
+const controller = require("../controllers/image_controllers");
 
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
@@ -23,10 +22,10 @@ const upload = multer({
     }
 });
 
-router.post("/addimages", upload.array("images", 5), image.add);
+router.post("/addimages", upload.array("images", 5), controller.add);
 
-router.post("/deleteimages", catchRequestError(image.delete));
+router.post("/deleteimages", catchRequestError(controller.delete));
 
-router.get("/getimages", catchRequestError(image.loadList));
+router.get("/getimages", catchRequestError(controller.loadList));
 
 module.exports = router;

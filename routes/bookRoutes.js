@@ -1,20 +1,19 @@
 const express = require("express");
+const router = express.Router();
 
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
-const book = require("../controllers/book_controller");
-
-const router = express.Router();
+const controller = require("../controllers/book_controller");
 
 router
     .route("/")
-    .get(catchRequestError(book.findAll))
-    .post(verifyJWT, catchRequestError(book.add));
+    .get(catchRequestError(controller.findAll))
+    .post(verifyJWT, catchRequestError(controller.add));
 
 router
     .route("/:id")
-    .post(verifyJWT, catchRequestError(book.findByid))
-    .put(verifyJWT, catchRequestError(book.editById))
-    .delete(verifyJWT, catchRequestError(book.deleteById));
+    .post(verifyJWT, catchRequestError(controller.findByid))
+    .put(verifyJWT, catchRequestError(controller.editById))
+    .delete(verifyJWT, catchRequestError(controller.deleteById));
 
 module.exports = router;

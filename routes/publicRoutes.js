@@ -1,10 +1,9 @@
 const express = require("express");
+const router = express.Router();
 
 const { catchRequestError } = require("../utils/catchAsync");
 const { validateMessage } = require("../utils/middleware");
 const public = require("../controllers/public_controllers");
-
-const router = express.Router();
 
 router.post("/submitcart", catchRequestError(public.submitCart));
 

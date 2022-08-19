@@ -1,9 +1,9 @@
 const express = require("express");
+const router = express.Router();
 
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const { catchRequestError } = require("../utils/catchAsync");
 const controller = require("../controllers/info_controllers");
-const router = express.Router();
 
 router.route("/").get(catchRequestError(controller.findAll));
 
