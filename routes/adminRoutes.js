@@ -5,7 +5,7 @@ const router = express.Router();
 const { catchRequestError } = require("../utils/catchAsync");
 const { checkDB } = require("../mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
-const admin = require("../controllers/admin_controller");
+const admin = require("../controllers/admin_controllers");
 
 router
     .route("/register")

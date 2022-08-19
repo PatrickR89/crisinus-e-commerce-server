@@ -1,13 +1,11 @@
 const express = require("express");
-const fse = require("fs-extra");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
 const router = express.Router();
 
 const { catchRequestError } = require("../utils/catchAsync");
-const { dbPoolPromise } = require("../mySqlConnection");
-const image = require("../controllers/image_controller");
+const image = require("../controllers/image_controllers");
 
 const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
