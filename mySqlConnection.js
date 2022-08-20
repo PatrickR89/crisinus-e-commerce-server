@@ -56,7 +56,7 @@ function handleDisconnect() {
                 logger.error("Database connection was refused.");
             }
 
-            connection.destroy();
+            connection.end();
             setTimeout(
                 ((connection = mysql.createPool(poolConnectConfig)),
                 (dbPoolPromise = connection.promise())),
