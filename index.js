@@ -10,7 +10,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
-const { checkDB } = require("./mySqlConnection");
+const { checkDB } = require("./databaseMiddleware/mySqlConnection");
 const { verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
 

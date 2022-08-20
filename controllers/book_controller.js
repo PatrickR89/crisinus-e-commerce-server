@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
-const { dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 module.exports.findAll = async (req, res) => {
     const [result] = await dbPoolPromise.execute("SELECT * FROM books");

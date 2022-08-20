@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 
-const { dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 module.exports.add = (req, res) => {
     const fileList = req.files;

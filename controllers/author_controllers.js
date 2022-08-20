@@ -1,4 +1,4 @@
-const { dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 module.exports.findAll = async (req, res) => {
     const [authors] = await dbPoolPromise.execute("SELECT * FROM authors");

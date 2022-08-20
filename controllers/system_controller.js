@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 
 const { clientLogger } = require("../utils/winstonLogger");
-const { dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 mailchimp.setConfig({
     apiKey: process.env.MAILCHIMP_API_KEY,

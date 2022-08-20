@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const { logger } = require("../utils/winstonLogger");
-const { dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 module.exports.getReg = (req, res) => {
     const token = req.headers["x-access-token"];

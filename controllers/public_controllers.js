@@ -1,4 +1,4 @@
-const { dbPoolPromise } = require("../mySqlConnection");
+const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 module.exports.submitCart = async (req, res) => {
     let orderString = JSON.stringify(req.body);

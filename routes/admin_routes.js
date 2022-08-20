@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { catchRequestError } = require("../utils/catchAsync");
-const { checkDB } = require("../mySqlConnection");
+const { checkDB } = require("../databaseMiddleware/mySqlConnection");
 const { verifyJWT } = require("../JWT/jwtMiddleware");
 const controller = require("../controllers/admin_controllers");
 

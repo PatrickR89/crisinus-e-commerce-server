@@ -2,7 +2,7 @@ const mysqlPromise = require("mysql2/promise");
 const mysql = require("mysql2");
 const bluebird = require("bluebird");
 
-const { logger } = require("./utils/winstonLogger");
+const { logger } = require("../utils/winstonLogger");
 
 const poolConnectConfig = {
     user: process.env.MYSQL_USER,
