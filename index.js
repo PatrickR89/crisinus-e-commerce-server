@@ -1,5 +1,5 @@
 if (process.env.NODE_ENV !== "production") {
-    require("dotenv").config();
+  require("dotenv").config();
 }
 
 const express = require("express");
@@ -15,19 +15,19 @@ const { verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
 
 const {
-    adminRoutes,
-    authorRoutes,
-    bookRoutes,
-    giftshopRoutes,
-    imageRoutes,
-    infoRoutes,
-    linksRoutes,
-    messagesRoutes,
-    newsRoutes,
-    ordersRoutes,
-    publicRoutes,
-    reviewsRoutes,
-    sysRoutes
+  adminRoutes,
+  authorRoutes,
+  bookRoutes,
+  giftshopRoutes,
+  imageRoutes,
+  infoRoutes,
+  linksRoutes,
+  messagesRoutes,
+  newsRoutes,
+  ordersRoutes,
+  publicRoutes,
+  reviewsRoutes,
+  sysRoutes
 } = require("./routes");
 
 const port = process.env.PORT || 3001;
@@ -35,28 +35,28 @@ const port = process.env.PORT || 3001;
 const app = express();
 
 const allowlist = [
-    "http://localhost:3000/",
-    "http://localhost:3001/",
-    "https://api.hnb.hr/tecajn/v1?valuta=EUR"
+  "http://localhost:3000/",
+  "http://localhost:3001/",
+  "https://api.hnb.hr/tecajn/v1?valuta=EUR"
 ];
 
 function corsOptionsDelegate(req, callback) {
-    var corsOptions;
-    if (allowlist.indexOf(req.header("Origin")) !== -1) {
-        corsOptions = { origin: true };
-    } else {
-        corsOptions = { origin: false };
-    }
-    return callback(null, corsOptions);
+  var corsOptions;
+  if (allowlist.indexOf(req.header("Origin")) !== -1) {
+    corsOptions = { origin: true };
+  } else {
+    corsOptions = { origin: false };
+  }
+  return callback(null, corsOptions);
 }
 
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000/");
-    res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept"
-    );
-    next();
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000/");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
 });
 
 app.use(cors(corsOptionsDelegate));
@@ -68,16 +68,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
 app.use(
-    session({
-        key: process.env.COOKIE_KEY,
-        secret: process.env.COOKIE_SECRET,
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-            expires: Date.now() + 1000 * 60 * 60 * 24 * 3,
-            maxAge: 1000 * 60 * 60 * 24 * 3
-        }
-    })
+  session({
+    key: process.env.COOKIE_KEY,
+    secret: process.env.COOKIE_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 3,
+      maxAge: 1000 * 60 * 60 * 24 * 3
+    }
+  })
 );
 
 app.use("/api/books", checkDB, verifyClient, bookRoutes);
@@ -95,17 +95,17 @@ app.use("/api/admin", verifyClient, adminRoutes);
 app.use("/api/images", checkDB, verifyClient, imageRoutes);
 
 app.get("*", checkDB, (req, res) => {
-    res.sendFile(path.resolve(__dirname, "./client", "index.html"));
+  res.sendFile(path.resolve(__dirname, "./client", "index.html"));
 });
 
 app.use((err, req, res, next) => {
-    const { status = 500, message = "Something went wrong" } = err;
+  const { status = 500, message = "Something went wrong" } = err;
 
-    logger.error(`status: ${status}; message: ${message}`);
-    res.status(status).send(err);
+  logger.error(`status: ${status}; message: ${message}`);
+  res.status(status).send(err);
 });
 
 app.listen(port, () => {
-    console.log(`app listening on port ${port}`);
-    // logger.info("app listening on port 3001");
+  console.log(`app listening on port ${port}`);
+  // logger.info("app listening on port 3001");
 });
