@@ -99,10 +99,11 @@ app.get("*", checkDB, (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  const { status = 500, message = "Something went wrong" } = err;
+  const { status = 500, message = "Internal server error" } = err;
 
   logger.error(`status: ${status}; message: ${message}`);
   res.status(status).send(err);
+  next();
 });
 
 app.listen(port, () => {

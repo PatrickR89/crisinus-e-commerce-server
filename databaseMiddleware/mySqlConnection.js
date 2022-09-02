@@ -60,7 +60,9 @@ function handleDisconnect() {
       if (err.code === "ECONNREFUSED") {
         logger.error("Database connection was refused.");
       }
-
+      if (err) {
+        logger.error(err);
+      }
       connection.end();
       setTimeout(restartConnection(), 2000);
     }
