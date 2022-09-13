@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const express = require("express");
 const session = require("express-session");
+const MemoryStore = require("memorystore")(session);
 const cors = require("cors");
 const path = require("path");
 
@@ -71,6 +72,9 @@ app.use(
   session({
     key: process.env.COOKIE_KEY,
     secret: process.env.COOKIE_SECRET,
+    store: new MemoryStore({
+      checkPeriod: 86400000
+    }),
     resave: false,
     saveUninitialized: false,
     cookie: {

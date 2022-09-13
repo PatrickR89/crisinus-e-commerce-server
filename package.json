@@ -1,11 +1,11 @@
 {
-  "name": "crisinus-srver",
+  "name": "crisinus-server",
   "version": "1.0.0",
   "description": "server and db for crisinus app",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "SET NODE_ENV=production & node ./index"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +24,7 @@
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.0",
     "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^14.2.0",
     "express": "^4.17.2",
@@ -31,6 +32,7 @@
     "fs-extra": "^10.0.1",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
+    "memorystore": "^1.6.7",
     "multer": "^1.4.4",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
