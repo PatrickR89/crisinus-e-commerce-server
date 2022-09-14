@@ -40,13 +40,16 @@ module.exports.checkCookies = (req, res) => {
 };
 
 module.exports.confirmCookies = (req, res) => {
-  const tempCookie = JSON.parse(req.cookies["cookies-modal"]);
-
-  if (typeof tempCookie == "boolean") {
-    res.json({ cookiesModal: tempCookie });
-  } else {
+  if (!req.cookies["cookies-modal"]) {
     res.json({ cookiesModal: true });
   }
+
+  const tempCookie = JSON.parse(req.cookies["cookies-modal"]);
+
+  if (typeof tempCookie != "boolean") {
+    res.json({ cookiesModal: true });
+  }
+  res.json({ cookiesModal: tempCookie });
 };
 
 module.exports.setClient = (req, res) => {
