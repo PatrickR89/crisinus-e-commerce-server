@@ -1,18 +1,18 @@
 {
   "files": {
     "main.css": "/static/css/main.65621931.css",
-    "main.js": "/static/js/main.65a15846.js",
+    "main.js": "/static/js/main.e83829b1.js",
     "static/js/787.b18ac57c.chunk.js": "/static/js/787.b18ac57c.chunk.js",
     "static/media/chrisinus_header.jpg": "/static/media/chrisinus_header.8142a93364bac9a9d21c.jpg",
     "static/media/logo-crisinus-nb.png": "/static/media/logo-crisinus-nb.c22ad01abd9c98603aab.png",
     "static/media/bookCover.jpeg": "/static/media/bookCover.fea3d7c600c579abe452.jpeg",
     "index.html": "/index.html",
     "main.65621931.css.map": "/static/css/main.65621931.css.map",
-    "main.65a15846.js.map": "/static/js/main.65a15846.js.map",
+    "main.e83829b1.js.map": "/static/js/main.e83829b1.js.map",
     "787.b18ac57c.chunk.js.map": "/static/js/787.b18ac57c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.65621931.css",
-    "static/js/main.65a15846.js"
+    "static/js/main.e83829b1.js"
   ]
 }
