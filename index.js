@@ -14,6 +14,7 @@ const cookieParser = require("cookie-parser");
 const { checkDB } = require("./databaseMiddleware/mySqlConnection");
 const { verifyClient } = require("./JWT/jwtMiddleware");
 const { logger } = require("./utils/winstonLogger");
+const initializeDatabase = require("./databaseMiddleware/createSchema");
 
 const {
   adminRoutes,
@@ -50,6 +51,8 @@ function corsOptionsDelegate(req, callback) {
   }
   return callback(null, corsOptions);
 }
+
+initializeDatabase();
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000/");

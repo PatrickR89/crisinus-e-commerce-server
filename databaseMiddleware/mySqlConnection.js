@@ -7,6 +7,7 @@ const { logger } = require("../utils/winstonLogger");
 const poolConnectConfig = {
   user: process.env.MYSQL_USER,
   host: process.env.MYSQL_HOST,
+  port: process.env.MYSQL_PORT,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
   waitForConnections: true,
@@ -21,7 +22,7 @@ handleDisconnect();
 
 let dbPoolPromise = connection.promise();
 
-const dbAuth = mysqlPromise.createConnection({
+const dbAuth = mysql.createConnection({
   user: process.env.MYSQL_USER,
   host: process.env.MYSQL_HOST,
   password: process.env.MYSQL_PASSWORD,
