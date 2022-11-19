@@ -3,6 +3,7 @@ const { logger } = require("../utils/winstonLogger");
 
 module.exports = function initializeDatabase() {
   let dbAuth = createSingleConnection();
+  dbAuth.connect();
   dbAuth.query("SHOW TABLES", (error, response) => {
     let tables = [];
     const requiredTables = [
@@ -20,7 +21,7 @@ module.exports = function initializeDatabase() {
       "users"
     ];
     response.forEach((singleElement) => {
-      tables.push(singleElement.Tables_in_crisinus_temp);
+      tables.push(singleElement.Tables_in_crisinus_schema);
     });
 
     requiredTables.forEach((table) => {
