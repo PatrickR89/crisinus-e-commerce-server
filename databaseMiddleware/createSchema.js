@@ -1,8 +1,7 @@
-const { createSingleConnection } = require("./mySqlConnection");
+const { dbAuth } = require("./mySqlConnection");
 const { logger } = require("../utils/winstonLogger");
 
 module.exports = function initializeDatabase() {
-  let dbAuth = createSingleConnection();
   dbAuth.connect();
   dbAuth.query("SHOW TABLES", (error, response) => {
     let tables = [];
@@ -21,7 +20,7 @@ module.exports = function initializeDatabase() {
       "users"
     ];
     response.forEach((singleElement) => {
-      tables.push(singleElement.Tables_in_crisinus_schema);
+      tables.push(singleElement.Tables_in_crisinushr_main_schema);
     });
 
     requiredTables.forEach((table) => {

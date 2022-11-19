@@ -30,7 +30,7 @@ handleDisconnect();
 
 let dbPoolPromise = connection.promise();
 
-// const dbAuth = createSingleConnection();
+const dbAuth = createSingleConnection();
 
 function createSingleConnection() {
   return mysql.createConnection(singleConnectConfig);
@@ -80,6 +80,7 @@ function handleDisconnect() {
 }
 
 module.exports = {
+  dbAuth,
   dbPoolPromise,
   checkDB,
   createSingleConnection
