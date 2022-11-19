@@ -16,19 +16,25 @@ const poolConnectConfig = {
   enableKeepAlive: true
 };
 
+const singleConnectConfig = {
+  user: process.env.MYSQL_USER,
+  host: process.env.MYSQL_HOST,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  Promise: bluebird
+};
+
 var connection = mysql.createPool(poolConnectConfig);
 
 handleDisconnect();
 
 let dbPoolPromise = connection.promise();
 
-const dbAuth = mysql.createConnection({
-  user: process.env.MYSQL_USER,
-  host: process.env.MYSQL_HOST,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  Promise: bluebird
-});
+// const dbAuth = createSingleConnection();
+
+function createSingleConnection() {
+  return mysql.createConnection(singleConnectConfig);
+}
 
 const checkDB = (req, res, next) => {
   // const path = req._parsedOriginalUrl.pathname;
@@ -74,7 +80,7 @@ function handleDisconnect() {
 }
 
 module.exports = {
-  dbAuth,
   dbPoolPromise,
-  checkDB
+  checkDB,
+  createSingleConnection
 };
