@@ -106,7 +106,7 @@ app.get("*", checkDB, (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  const { status = 500, message = "Internal server error" } = err;
+  const { status, message } = err;
 
   logger.error(`status: ${status}; message: ${message}`);
   res.status(status).send(err);
@@ -114,6 +114,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`app listening on port ${port}`);
-  // logger.info("app listening on port 3001");
+  logger.info(
+    `Crisinus server application is listening on port; ${port}, with start on: ${new Date()}`
+  );
 });

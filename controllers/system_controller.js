@@ -42,6 +42,7 @@ module.exports.checkCookies = (req, res) => {
 module.exports.confirmCookies = (req, res) => {
   if (!req.cookies["cookies-modal"]) {
     res.json({ cookiesModal: true });
+    return;
   }
 
   const tempCookie = JSON.parse(req.cookies["cookies-modal"]);
