@@ -3,7 +3,6 @@ const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 module.exports.add = async (req, res) => {
   const { dimensions } = req.body;
   const { product_id, height, width, depth, weight } = dimensions;
-  console.log(dimensions);
 
   const [addedDimension] = await dbPoolPromise.execute(
     "INSERT INTO product_dimensions (product_id, height, width, depth, weight) VALUES (?, ?, ?, ?, ?)",
@@ -14,7 +13,6 @@ module.exports.add = async (req, res) => {
 
 module.exports.findById = async (req, res) => {
   const id = req.body.id;
-  console.log(req.body);
 
   const [itemDimensions] = await dbPoolPromise.execute(
     "SELECT * FROM product_dimensions WHERE product_id = ?",

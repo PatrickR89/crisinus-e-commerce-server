@@ -142,3 +142,14 @@ module.exports.links = async (req, res) => {
   const [links] = await dbPoolPromise.execute("SELECT * FROM anchor_links");
   res.send(links);
 };
+
+module.exports.dimensions = async (req, res) => {
+  const id = req.body.id;
+
+  const [itemDimensions] = await dbPoolPromise.execute(
+    "SELECT * FROM product_dimensions WHERE product_id = ?",
+    [id]
+  );
+
+  res.send(itemDimensions);
+};
