@@ -11,19 +11,21 @@ const ordersRoutes = require("./orders_routes");
 const publicRoutes = require("./public_routes");
 const reviewsRoutes = require("./reviews_routes");
 const sysRoutes = require("./system_routes");
+const productDimRoutes = require("./product_dim_routes");
 
 module.exports = {
-    adminRoutes,
-    authorRoutes,
-    bookRoutes,
-    giftshopRoutes,
-    imageRoutes,
-    infoRoutes,
-    linksRoutes,
-    messagesRoutes,
-    newsRoutes,
-    ordersRoutes,
-    publicRoutes,
-    reviewsRoutes,
-    sysRoutes
+  adminRoutes,
+  authorRoutes,
+  bookRoutes,
+  giftshopRoutes,
+  imageRoutes,
+  infoRoutes,
+  linksRoutes,
+  messagesRoutes,
+  newsRoutes,
+  ordersRoutes,
+  productDimRoutes,
+  publicRoutes,
+  reviewsRoutes,
+  sysRoutes
 };

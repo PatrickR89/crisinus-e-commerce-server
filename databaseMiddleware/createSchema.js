@@ -15,6 +15,7 @@ module.exports = function initializeDatabase() {
       "info_pages",
       "news",
       "newsletter",
+      "product_dimensions",
       "product_orders",
       "ratings",
       "users"
@@ -38,6 +39,21 @@ module.exports = function initializeDatabase() {
 };
 
 function createTable(table) {
+  if (table === "product_dimensions") {
+    dbAuth.query(
+      `CREATE TABLE product-dimensions(
+      product_id VARCHAR(100) PRIMARY KEY,
+      width INT,
+      height INT,
+      depth INT,
+      weight INT)`,
+      (error, response) => {
+        if (error) {
+          logger.error(`${table} table creation error: ${error}`);
+        }
+      }
+    );
+  }
   if (table === "anchor_links") {
     dbAuth.query(
       `CREATE TABLE anchor_links(

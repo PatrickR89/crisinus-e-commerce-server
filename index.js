@@ -27,6 +27,7 @@ const {
   messagesRoutes,
   newsRoutes,
   ordersRoutes,
+  productDimRoutes,
   publicRoutes,
   reviewsRoutes,
   sysRoutes
@@ -100,6 +101,7 @@ app.use("/api/system", checkDB, sysRoutes);
 app.use("/api/messages", checkDB, verifyClient, messagesRoutes);
 app.use("/api/admin", verifyClient, adminRoutes);
 app.use("/api/images", checkDB, verifyClient, imageRoutes);
+app.use("/api/productdimensions", checkDB, verifyClient, productDimRoutes);
 
 app.get("*", checkDB, (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client", "index.html"));
