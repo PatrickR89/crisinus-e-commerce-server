@@ -41,7 +41,7 @@ module.exports = function initializeDatabase() {
 function createTable(table) {
   if (table === "product_dimensions") {
     dbAuth.query(
-      `CREATE TABLE product-dimensions(
+      `CREATE TABLE product_dimensions(
       product_id VARCHAR(100) PRIMARY KEY,
       width INT,
       height INT,
