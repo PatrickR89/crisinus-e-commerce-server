@@ -12,11 +12,13 @@ const publicRoutes = require("./public_routes");
 const reviewsRoutes = require("./reviews_routes");
 const sysRoutes = require("./system_routes");
 const productDimRoutes = require("./product_dim_routes");
+const bookPropsRoutes = require("./book_properties_routes");
 
 module.exports = {
   adminRoutes,
   authorRoutes,
   bookRoutes,
+  bookPropsRoutes,
   giftshopRoutes,
   imageRoutes,
   infoRoutes,

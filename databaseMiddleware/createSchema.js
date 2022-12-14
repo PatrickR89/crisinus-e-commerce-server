@@ -9,6 +9,7 @@ module.exports = function initializeDatabase() {
       "anchor_links",
       "authors",
       "books",
+      "book_properties",
       "contact_messages",
       "giftshop",
       "images",
@@ -98,6 +99,21 @@ function createTable(table) {
       language VARCHAR(45),  
       year INT, 
       description TEXT)  `,
+      (error, response) => {
+        if (error) {
+          logger.error(`${table} table creation error: ${error}`);
+        }
+      }
+    );
+  }
+
+  if (table === "book_properties") {
+    dbAuth.query(
+      `CREATE TABLE book_properties(
+        id VARCHAR(50) PRIMARY KEY,
+        cover ENUM('NULL', 'HARDCOVER' ,'PAPERBACK'),
+        pages INT
+      )`,
       (error, response) => {
         if (error) {
           logger.error(`${table} table creation error: ${error}`);

@@ -20,6 +20,7 @@ const {
   adminRoutes,
   authorRoutes,
   bookRoutes,
+  bookPropsRoutes,
   giftshopRoutes,
   imageRoutes,
   infoRoutes,
@@ -102,13 +103,14 @@ app.use("/api/messages", checkDB, verifyClient, messagesRoutes);
 app.use("/api/admin", verifyClient, adminRoutes);
 app.use("/api/images", checkDB, verifyClient, imageRoutes);
 app.use("/api/productdimensions", checkDB, verifyClient, productDimRoutes);
+app.use("/api/bookprops", checkDB, verifyClient, bookPropsRoutes);
 
 app.get("*", checkDB, (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client", "index.html"));
 });
 
 app.use((err, req, res, next) => {
-  const { status, message } = err;
+  const { status = 500, message = "Unknown internal error" } = err;
 
   logger.error(`status: ${status}; message: ${message}`);
   res.status(status).send(err);
