@@ -71,7 +71,7 @@ function handleDisconnect() {
         logger.error(err);
       }
       connection.end();
-      setTimeout(restartConnection(), 2000);
+      setTimeout(restartConnection, 2000);
     }
 
     if (conn) return conn.release();
