@@ -1,4 +1,5 @@
 const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
+const conditionalArrayParse = require("../utils/conditionalArrayParse");
 
 module.exports.findAll = async (req, res) => {
   const [authors] = await dbPoolPromise.execute("SELECT * FROM authors");
@@ -12,7 +13,11 @@ module.exports.findById = async (req, res) => {
     "SELECT * FROM authors WHERE id = ?",
     [id]
   );
-  res.send(author);
+
+  let tempAuthor = { ...author };
+  tempAuthor[0].img = conditionalArrayParse(author[0].img);
+
+  res.send(tempAuthor);
 };
 
 module.exports.editById = async (req, res) => {

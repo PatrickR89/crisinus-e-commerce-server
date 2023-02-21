@@ -14,6 +14,7 @@ mailchimp.setConfig({
 module.exports.error = async (req, res) => {
   const err = req.body.err;
   clientLogger.error(err);
+  res.json({ status: 200 });
 };
 module.exports.info = async (req, res) => {
   const info = req.body.info;

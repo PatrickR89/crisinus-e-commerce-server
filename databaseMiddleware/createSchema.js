@@ -21,9 +21,11 @@ module.exports = function initializeDatabase() {
       "ratings",
       "users"
     ];
-    response.forEach((singleElement) => {
-      tables.push(singleElement.Tables_in_crisinushr_main_schema);
-    });
+    if (response !== undefined) {
+      response.forEach((singleElement) => {
+        tables.push(singleElement.Tables_in_crisinushr_main_schema);
+      });
+    }
 
     requiredTables.forEach((table) => {
       if (!tables.includes(table)) {

@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
-
+const conditionalArrayParse = require("../utils/conditionalArrayParse");
 const { dbPoolPromise } = require("../databaseMiddleware/mySqlConnection");
 
 module.exports.findAll = async (req, res) => {
@@ -29,7 +29,11 @@ module.exports.findById = async (req, res) => {
     "SELECT * FROM news WHERE id = ?",
     [id]
   );
-  res.send(newsById);
+
+  let tempNews = { ...newsById };
+  tempNews[0].images = conditionalArrayParse(newsById[0].images);
+
+  res.send(tempNews);
 };
 
 module.exports.editById = async (req, res) => {
