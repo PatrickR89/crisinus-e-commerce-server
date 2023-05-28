@@ -28,9 +28,11 @@ module.exports.editById = async (req, res) => {
   let bio = req.body.bio;
   let id = req.body.id;
 
+  let dbImages = JSON.stringify(images)
+
   const [author] = await dbPoolPromise.execute(
     "UPDATE authors SET name = ?, last_name = ?, img = ?, url = ?, bio = ? WHERE id = ?",
-    [first_name, last_name, images, url, bio, id]
+    [first_name, last_name, dbImages, url, bio, id]
   );
 
   console.log(author);

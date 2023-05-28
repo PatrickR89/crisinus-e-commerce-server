@@ -30,8 +30,9 @@ module.exports.add = async (req, res) => {
   const authors = req.body.authors;
 
   let tempImgs = JSON.stringify(imgs);
-
+  
   const authorsIds = await populateAuthors(authors);
+  let tempAuthors = JSON.stringify(authorsIds)
 
   const [newBook] = await dbPoolPromise.execute(
     "INSERT INTO books (id, title, images, genre, max_order, price, publisher, language, year, description, authors) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -46,7 +47,7 @@ module.exports.add = async (req, res) => {
       language,
       year,
       desc,
-      authorsIds
+      tempAuthors
     ]
   );
   res.send("new book created");
@@ -84,12 +85,13 @@ module.exports.editById = async (req, res) => {
   const tempImgs = JSON.stringify(imgs);
 
   const authorsIds = await populateAuthors(authors);
+   let tempAuthors = JSON.stringify(authorsIds)
 
   await dbPoolPromise.execute(
     "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ?, images = ? WHERE id = ?",
     [
       title,
-      authorsIds,
+      tempAuthors,
       genre,
       max_order,
       price,

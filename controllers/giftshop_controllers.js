@@ -18,9 +18,11 @@ module.exports.add = async (req, res) => {
   const images = req.body.images;
   const description = req.body.description;
 
+  const tempImages = JSON.stringify(images)
+
   const [addedItem] = await dbPoolPromise.execute(
     "INSERT INTO giftshop (id, name, price, max_order, images, description) VALUES (?, ?, ?, ?, ?, ?)",
-    [uuidv4(), name, price, max_order, images, description]
+    [uuidv4(), name, price, max_order, tempImages, description]
   );
   res.send(addedItem);
 };

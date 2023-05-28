@@ -32,8 +32,10 @@ module.exports.editById = async (req, res) => {
   const images = req.body.images;
   const content = req.body.content;
 
+  const tempImages = JSON.stringify(images)
+
   await dbPoolPromise.execute(
     "UPDATE info_pages SET images = ?, content = ? WHERE id = ?",
-    [images, content, id]
+    [tempImages, content, id]
   );
 };
