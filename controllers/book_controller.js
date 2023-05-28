@@ -6,12 +6,10 @@ module.exports.findAll = async (req, res) => {
   const [result] = await dbPoolPromise.execute("SELECT * FROM books");
   let books = result.map((book) => {
     let newBook = { ...book };
-    if (!Array.isArray(book.authors)) {
-      newBook.authors = [...JSON.parse(book.authors)];
-    }
-    if (!Array.isArray(book.images)) {
-      newBook.images = [...JSON.parse(book.images)];
-    }
+
+    newBook.authors = conditionalArrayParse(book.authors);
+    newBook.images = conditionalArrayParse(book.images);
+    
     return newBook;
   });
   res.send(books);
@@ -88,7 +86,10 @@ module.exports.editById = async (req, res) => {
    let tempAuthors = JSON.stringify(authorsIds)
 
   await dbPoolPromise.execute(
-    "UPDATE books SET title = ?, authors = ?, genre = ?, max_order = ?, price = ?, publisher = ?, language = ?, year = ?, description = ?, images = ? WHERE id = ?",
+    `UPDATE books SET title = ?, authors = ?, 
+    genre = ?, max_order = ?, price = ?, 
+    publisher = ?, language = ?, year = ?,
+    description = ?, images = ? WHERE id = ?`,
     [
       title,
       tempAuthors,

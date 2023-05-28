@@ -1,4 +1,8 @@
 function conditionalArrayParse(array) {
+  if (array === null ||
+     array === undefined || 
+     array === "") return [];
+     
   let newArray = [...array];
 
   if (!Array.isArray(array)) {

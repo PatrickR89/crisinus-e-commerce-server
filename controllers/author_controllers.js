@@ -16,7 +16,6 @@ module.exports.findById = async (req, res) => {
 
   let tempAuthor = { ...author };
   tempAuthor[0].img = conditionalArrayParse(author[0].img);
-
   res.send(tempAuthor);
 };
 

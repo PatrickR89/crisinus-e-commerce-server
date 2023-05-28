@@ -233,9 +233,7 @@ module.exports.authorById = async (req, res) => {
   );
 
   let tempAuthor = { ...author };
-
   tempAuthor[0].img = conditionalArrayParse(author[0].img);
-
   res.send(tempAuthor);
 };
 
@@ -256,6 +254,10 @@ module.exports.dimensions = async (req, res) => {
 };
 
 function conditionalArrayParse(array) {
+  if (array === null ||
+     array === undefined || 
+     array === "") return [];
+  
   let newArray = [...array];
 
   if (!Array.isArray(array)) {
