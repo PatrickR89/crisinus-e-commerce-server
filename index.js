@@ -38,11 +38,11 @@ const port = process.env.PORT || 3001;
 
 const app = express();
 
-const allowlist = [
-  "http://localhost:3000/",
-  "http://localhost:3001/",
-  "https://api.hnb.hr/tecajn/v1?valuta=EUR"
-];
+const allowlist = (process.env.CORS_ALLOWLIST ||
+  "http://localhost:3000/,http://localhost:3001/" )
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 function corsOptionsDelegate(req, callback) {
   var corsOptions;
@@ -57,7 +57,10 @@ function corsOptionsDelegate(req, callback) {
 initializeDatabase();
 
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000/");
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    allowlist[0] || "http://localhost:3000/"
+  );
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"

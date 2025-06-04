@@ -5,3 +5,4 @@ application.log
 clientApp.log
 .dockerignore
 Dockerfile
+dist/

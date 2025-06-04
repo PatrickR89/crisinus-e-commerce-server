@@ -44,16 +44,17 @@ module.exports.deleteById = async (req, res) => {
   const tempId = JSON.stringify(id);
 
   const [books] = await dbPoolPromise.execute(
-    `SELECT * FROM books WHERE JSON_CONTAINS(authors, '${tempId}')`
+    'SELECT * FROM books WHERE JSON_CONTAINS(authors, ?)',
+    [tempId]
   );
-  books.forEach(async (book) => {
+  for (const book of books) {
     const newAuthors = book.authors.filter((author) => author !== id);
 
-    await dbPoolPromise.execute("UPDATE books SET authors = ? WHERE id = ?", [
+    await dbPoolPromise.execute('UPDATE books SET authors = ? WHERE id = ?', [
       newAuthors,
       book.id
     ]);
-  });
+  }
 
   await dbPoolPromise.execute("DELETE FROM authors WHERE id = ?", [id]);
 
