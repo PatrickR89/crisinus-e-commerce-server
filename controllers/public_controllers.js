@@ -43,20 +43,12 @@ module.exports.books = async (req, res) => {
 const assignAuthorsById = async (books, authorsToAssign) => {
   let assigned = [];
 
-  let promise = new Promise((resolve, reject) => {
-    books.forEach(async (book, index, array) => {
-      const authors = await filterAuthors(book.authors, authorsToAssign);
-      let newBook = { ...book };
-      newBook.authors = authors;
-      assigned.push(newBook);
-
-      if (index === array.length - 1) {
-        resolve();
-      }
-    });
-  });
-
-  await promise;
+  for (const book of books) {
+    const authors = await filterAuthors(book.authors, authorsToAssign);
+    let newBook = { ...book };
+    newBook.authors = authors;
+    assigned.push(newBook);
+  }
   return assigned;
 };
 
@@ -66,23 +58,14 @@ const filterAuthors = async (authors, authorsToAssign) => {
   if (!Array.isArray(authors)) {
     tempAuthors = [...JSON.parse(authors)];
   }
-  let promise = new Promise((resolve, reject) => {
-    tempAuthors.forEach(async (id, index, array) => {
-      const filteredAuthor = await authorsToAssign.filter(
-        (aut) => aut.id === id
-      );
-      let tempAuthor = [...filteredAuthor];
-      if (!Array.isArray(filteredAuthor)) {
-        tempAuthor = [...JSON.parse(filteredAuthor)];
-      }
-      filtered.push(tempAuthor[0]);
-      if (index === array.length - 1) {
-        resolve();
-      }
-    });
-  });
-
-  await promise;
+  for (const id of tempAuthors) {
+    const filteredAuthor = await authorsToAssign.filter((aut) => aut.id === id);
+    let tempAuthor = [...filteredAuthor];
+    if (!Array.isArray(filteredAuthor)) {
+      tempAuthor = [...JSON.parse(filteredAuthor)];
+    }
+    filtered.push(tempAuthor[0]);
+  }
   return filtered;
 };
 
@@ -113,17 +96,10 @@ async function populateAuthors(inputAuthors) {
   if (!Array.isArray(inputAuthors)) {
     tempAuthors = [...JSON.parse(inputAuthors)];
   }
-  let promise = new Promise((resolve, reject) => {
-    tempAuthors.forEach(async (author, index, array) => {
-      let tempAuthor = await fetchAuthorsById(author);
-      authors.push(tempAuthor);
-      if (index === array.length - 1) {
-        resolve();
-      }
-    });
-  });
-
-  await promise;
+  for (const author of tempAuthors) {
+    let tempAuthor = await fetchAuthorsById(author);
+    authors.push(tempAuthor);
+  }
   return authors;
 }
 

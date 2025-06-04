@@ -12,7 +12,7 @@ const extension = (joi) => ({
             validate(value, helpers) {
                 const clean = sanitizeHTML(value, {
                     allowedTags: [],
-                    allowedAtributes: {}
+                    allowedAttributes: {}
                 });
                 if (clean !== value) {
                     return helpers.error("string.escapeHTML", { value });

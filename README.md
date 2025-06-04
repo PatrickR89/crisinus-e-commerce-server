@@ -15,6 +15,9 @@ Session and cookies are handled with express, with addition of cookie-parser, an
 
 CORS was added for development, while connecting React application to node (I did not know in start about setting a proxy in react package.json), although it has outlived it's usefullness, I did leave it in application, for some possible future testing, as I intend to create an iOS app for same web app. CORS is currently useless as the frontend app is integrated into node.
 
+Allowed origins can now be configured through the `CORS_ALLOWLIST` environment
+variable which accepts a comma separated list of URLs.
+
 ## DATABASE
 
 For practice and it's usefulness MySQL is used as the database, as also it is the most common database on hosting servers in my country. Application connects with DB via mysql2 node package, with use of promise in pool connections. Except for one part in adding, editing and deleting books, where I needed to use promise to have in time loaded authors (separate table in DB) for loaded book(s), rest of the code did not require async access to DB, but did make my code lot cleaner, without nesting. 
@@ -32,3 +35,4 @@ To make whole thing safe for and from guests browsing the pages, all input direc
 
 As I mentioned before, client application is integrated in node.js, and called on any and every route call which is not a defined API call.
 More about client: [https://github.com/PatrickR89/crisinus-e-commerce]
+\n## Building\nRun `npm run build` to compile the TypeScript sources into the `dist` directory.

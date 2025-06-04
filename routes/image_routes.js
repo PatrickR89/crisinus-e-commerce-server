@@ -22,7 +22,11 @@ const upload = multer({
     }
 });
 
-router.post("/addimages", upload.array("images", 5), controller.add);
+router.post(
+  "/addimages",
+  upload.array("images", 5),
+  catchRequestError(controller.add)
+);
 
 router.post("/deleteimages", catchRequestError(controller.delete));
 

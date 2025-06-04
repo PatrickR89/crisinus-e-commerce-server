@@ -55,7 +55,8 @@ module.exports.findByid = async (req, res) => {
   const id = req.body.id;
 
   const [book] = await dbPoolPromise.execute(
-    `SELECT * FROM books WHERE id = '${id}'`
+    'SELECT * FROM books WHERE id = ?',
+    [id]
   );
   const authorsIds = book[0].authors;
 
@@ -118,7 +119,8 @@ module.exports.deleteById = async (req, res) => {
 async function fetchOrSaveAuthor(author) {
   let result;
   let [resultDB] = await dbPoolPromise.execute(
-    `SELECT id FROM authors WHERE name = '${author.name}' AND last_name = '${author.last_name}'`
+    'SELECT id FROM authors WHERE name = ? AND last_name = ?',
+    [author.name, author.last_name]
   );
   if (resultDB.length < 1) {
     author["id"] = uuidv4();
@@ -139,17 +141,10 @@ async function populateAuthors(authors) {
   if (!Array.isArray(authors)) {
     return [];
   }
-  let populate = new Promise((resolve, reject) => {
-    authors.forEach(async (author, index, authors) => {
-      let result = await fetchOrSaveAuthor(author);
-      authorsIds.push(result);
-      if (index === authors.length - 1) {
-        resolve();
-      }
-    });
-  });
-
-  await populate;
+  for (const author of authors) {
+    let result = await fetchOrSaveAuthor(author);
+    authorsIds.push(result);
+  }
   return authorsIds;
 }
 
@@ -159,23 +154,17 @@ async function findAuthorsPerBook(ids) {
   if (!Array.isArray(ids)) {
     tempIds = [...JSON.parse(ids)];
   }
-  let populate = new Promise((resolve, resject) => {
-    tempIds.forEach(async (id, index, ids) => {
-      let author = await findAuthorById(id);
-      authors.push(author);
-      if (index === ids.length - 1) {
-        resolve();
-      }
-    });
-  });
-
-  await populate;
+  for (const id of tempIds) {
+    let author = await findAuthorById(id);
+    authors.push(author);
+  }
   return authors;
 }
 
 async function findAuthorById(id) {
   const [author] = await dbPoolPromise.execute(
-    `SELECT * FROM authors WHERE id = '${id}'`
+    'SELECT * FROM authors WHERE id = ?',
+    [id]
   );
 
   return author[0];
